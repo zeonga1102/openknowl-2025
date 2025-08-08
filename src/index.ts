@@ -11,11 +11,11 @@ export const DI = {} as {
 };
 
 const start = async () => {
-    const orm = await MikroORM.init(config);
-    DI.orm = orm;
-    DI.em = DI.orm.em;
+  const orm = await MikroORM.init(config);
+  DI.orm = orm;
+  DI.em = DI.orm.em;
 
-    app.listen(3000, () => console.log('Server running'));
+  app.listen(3000, () => console.log('Server running'));
 };
 
 start();

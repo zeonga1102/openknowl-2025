@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 
 app.use((req, res, next) => {
-    RequestContext.create(DI.orm.em, next);
+  RequestContext.create(DI.orm.em, next);
 });
 
 export default app;
