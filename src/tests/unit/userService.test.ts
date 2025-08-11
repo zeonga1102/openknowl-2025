@@ -23,7 +23,7 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
     } as unknown as EntityManager;
   });
 
-  it('일반 유저 회원가입 성공', async () => {
+  it('user 저장 성공', async () => {
     const input = {
       username: 'test',
       password: 'password',
@@ -48,7 +48,7 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
     });
   });
 
-  it('관리자 유저 회원가입 성공', async () => {
+  it('isAdmin이 true인 유저 저장 성공', async () => {
     const input = {
       username: 'test',
       password: 'password',
@@ -63,7 +63,7 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
     expect(result.isAdmin).toBe(true);
   });
 
-  it('isAdmin이 주어지지 않은 경우 일반 유저로 가입 성공', async () => {
+  it('isAdmin이 없는 user 저장 성공', async () => {
     const input = {
       username: 'test',
       password: 'password',
@@ -77,7 +77,7 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
     expect(result.isAdmin).toBe(false);
   });
 
-  it('phone이 주어지지 않은 경우 가입 성공', async () => {
+  it('phone이 없는 user 저장 성공', async () => {
     const input = {
       username: 'test',
       password: 'password',
