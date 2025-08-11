@@ -10,12 +10,10 @@ export const DI = {} as {
   em: EntityManager;
 };
 
-const start = async () => {
+export const start = (async () => {
   const orm = await MikroORM.init(config);
   DI.orm = orm;
   DI.em = DI.orm.em;
 
-  app.listen(3000, () => console.log('Server running'));
-};
-
-start();
+  DI.server = app.listen(3000, () => console.log('Server running'));
+})();
