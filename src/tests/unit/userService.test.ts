@@ -1,15 +1,22 @@
-import { EntityManager } from '@mikro-orm/postgresql';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import bcrypt from 'bcrypt';
 
 import { createUser } from '../../services/userService';
+import { User } from '../../entities/User';
 
 jest.mock('bcrypt');
 
 describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트', () => {
   let em: EntityManager;
+  let userRepo: EntityRepository<User>;
 
   beforeEach(() => {
+    userRepo = {
+      create: jest.fn(),
+    } as unknown as EntityRepository<User>;
+
     em = {
+      getRepository: jest.fn(() => userRepo),
       flush: jest.fn(),
     } as unknown as EntityManager;
   });
