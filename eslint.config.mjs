@@ -10,7 +10,12 @@ export default defineConfig([
   {
     rules: {
       semi: "error",
-      indent: ["error", 2]
+      indent: ["error", 2,
+        {
+          SwitchCase: 1,
+          ignoredNodes: ["PropertyDefinition[decorators]"]
+        }
+      ]
     }
   },
   { files: ["**/*.{js,mjs,cjs,ts,mts,cts}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.node } },
