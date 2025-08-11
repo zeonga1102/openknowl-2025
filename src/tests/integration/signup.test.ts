@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import { DI, start } from '../../index';
 import app from '../../app';
 import { User } from '../../entities/User';
+import { ErrorMessages } from '../../constants/error-messages';
 
 const API = '/api/users/signup';
 
@@ -31,7 +32,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       name: 'user',
       email: 'test@example.com',
       phone: '010-1234-5678',
-      isAdmin: false,
+      isAdmin: false
     };
 
     const result = await request(app)
@@ -60,7 +61,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       name: 'user',
       email: 'test@example.com',
       phone: '010-1234-5678',
-      isAdmin: true,
+      isAdmin: true
     };
 
     const result = await request(app)
@@ -148,4 +149,73 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
 
       expect(result.status).toBe(400);
     })
+
+    it('username이 중복인 경우 가입 실패', async () => {
+      const input = {
+      username: 'test',
+      password: 'password',
+      name: 'user',
+      email: 'test@example.com',
+      phone: '010-1234-5678'
+    };
+
+    const result1 = await request(app)
+      .post(API)
+      .send(input);
+    
+    expect(result1.status).toBe(201);
+
+    const result2 = await request(app)
+      .post(API)
+      .send({ ...input, email: 'diff@example.com', phone: '010-9876-5432' });
+    
+    expect(result2.status).toBe(400);
+    expect(result2.body.message).toBe(ErrorMessages.EXISTING_USERNAME);
+  })
+
+  it('email이 중복인 경우 가입 실패', async () => {
+      const input = {
+      username: 'test',
+      password: 'password',
+      name: 'user',
+      email: 'test@example.com',
+      phone: '010-1234-5678'
+    };
+
+    const result1 = await request(app)
+      .post(API)
+      .send(input);
+    
+    expect(result1.status).toBe(201);
+
+    const result2 = await request(app)
+      .post(API)
+      .send({ ...input, username: 'diff', phone: '010-9876-5432' });
+    
+    expect(result2.status).toBe(400);
+    expect(result2.body.message).toBe(ErrorMessages.EXISTING_EMAIL);
+  })
+
+  it('phone이 중복인 경우 가입 실패', async () => {
+      const input = {
+      username: 'test',
+      password: 'password',
+      name: 'user',
+      email: 'test@example.com',
+      phone: '010-1234-5678'
+    };
+
+    const result1 = await request(app)
+      .post(API)
+      .send(input);
+    
+    expect(result1.status).toBe(201);
+
+    const result2 = await request(app)
+      .post(API)
+      .send({ ...input, username: 'diff', email: 'diff@example.com' });
+    
+    expect(result2.status).toBe(400);
+    expect(result2.body.message).toBe(ErrorMessages.EXISTING_PHONE);
+  })
 });
