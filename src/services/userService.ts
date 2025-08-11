@@ -2,8 +2,9 @@ import { EntityManager } from '@mikro-orm/core';
 import bcrypt from 'bcrypt';
 
 import { User } from '../entities/User';
+import { CreateUserDto } from '../dtos/CreateUserDto';
 
-export async function createUser(em: EntityManager, data: any) {
+export async function createUser(em: EntityManager, data: CreateUserDto) {
   const user = new User();
   user.username = data.username;
   user.password = await bcrypt.hash(data.password, 10);

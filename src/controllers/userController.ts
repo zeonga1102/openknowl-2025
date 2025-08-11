@@ -8,8 +8,8 @@ export const signup = async (req: Request, res: Response) => {
     const em = RequestContext.getEntityManager() as EntityManager;
     const user = await createUser(em, req.body);
 
-    const { password, ...safeUser } = user;
-    res.status(201).json(safeUser);
+    const { password, ...newUser } = user;
+    res.status(201).json(newUser);
   }
   catch (err: any) {
     res.status(400).json({ message: err.message });
