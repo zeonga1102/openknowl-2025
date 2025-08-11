@@ -12,4 +12,8 @@ export const ErrorMessages = {
     
   INVALID_EMAIL: '올바른 이메일 형식이 아닙니다.',
   INVALID_PHONE: '올바른 휴대폰 번호 형식이 아닙니다.',
+
+  EXISTING_USERNAME: '중복된 아이디입니다.',
+  EXISTING_EMAIL: '중복된 이메일입니다.',
+  EXISTING_PHONE: '중복된 휴대폰 번호입니다.'
 };
