@@ -1,9 +1,12 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 import { User } from '../entities/User';
 import { CreateUserDto } from '../dtos/CreateUserDto';
+import { LoginDto } from '../dtos/LoginDto';
 import { ErrorMessages } from '../constants/error-messages';
+import { ENV } from '../config/env';
 
 export async function createUser(em: EntityManager, data: CreateUserDto) {
   const repo = em.getRepository(User);
@@ -23,6 +26,27 @@ export async function createUser(em: EntityManager, data: CreateUserDto) {
   await em.flush();
 
   return user;
+}
+
+export async function loginUser(em: EntityManager, data: LoginDto) {
+  const repo = em.getRepository(User);
+  
+  const user = await repo.findOne({ username: data.username });
+  if (!user) throw new Error(ErrorMessages.LOGIN_FAILED);
+
+  const isEqual = await bcrypt.compare(data.password, user.password);
+  if (!isEqual) throw new Error(ErrorMessages.LOGIN_FAILED);
+
+  const accessToken = jwt.sign(
+    {
+      id: user.id,
+      username: user.username,
+      isAdmin: user.isAdmin
+    },
+    ENV.JWT.SECRET_KEY
+  );
+
+  return { accessToken };
 }
 
 async function checkUserCreateData(repo: EntityRepository<User>, username: string, email: string, phone?: string) {
