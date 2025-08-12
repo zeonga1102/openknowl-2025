@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest",
+    "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:unit": "cross-env NODE_ENV=test jest src/tests/unit",
-    "test:integration": "cross-env NODE_ENV=test jest src/tests/integration",
+    "test:integration": "cross-env NODE_ENV=test jest src/tests/integration --runInBand",
     "start": "cross-env NODE_ENV=development nodemon src/index.ts",
     "dev": "cross-env NODE_ENV=development nodemon --watch src --exec ts-node src/index.ts",
     "lint": "eslint . --ext .ts",
