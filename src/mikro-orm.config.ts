@@ -1,21 +1,17 @@
 import { Options, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
-import dotenv from 'dotenv';
-import path from 'path';
 
 import { User } from './entities/User';
-
-const envFile = `.env.${process.env.NODE_ENV || 'development'}`;
-dotenv.config({ path: path.resolve(__dirname, '..', envFile) });
+import { ENV } from './config/env';
 
 const config: Options = {
   entities: [User],
-  dbName: process.env.dbName,
+  dbName: ENV.DB.NAME,
   driver: PostgreSqlDriver,
-  user: process.env.user,
-  password: process.env.password,
-  host: process.env.host,
-  port: Number(process.env.port),
+  user: ENV.DB.USER,
+  password: ENV.DB.PASSWORD,
+  host: ENV.DB.HOST,
+  port: Number(ENV.DB.PORT),
   debug: true,
   metadataProvider: TsMorphMetadataProvider
 };
