@@ -15,5 +15,7 @@ export const ErrorMessages = {
 
   EXISTING_USERNAME: '중복된 아이디입니다.',
   EXISTING_EMAIL: '중복된 이메일입니다.',
-  EXISTING_PHONE: '중복된 휴대폰 번호입니다.'
+  EXISTING_PHONE: '중복된 휴대폰 번호입니다.',
+
+  LOGIN_FAILED: '로그인 실패'
 };

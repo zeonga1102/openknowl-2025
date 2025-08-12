@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest",
+    "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:unit": "cross-env NODE_ENV=test jest src/tests/unit",
-    "test:integration": "cross-env NODE_ENV=test jest src/tests/integration",
+    "test:integration": "cross-env NODE_ENV=test jest src/tests/integration --runInBand",
     "start": "cross-env NODE_ENV=development nodemon src/index.ts",
     "dev": "cross-env NODE_ENV=development nodemon --watch src --exec ts-node src/index.ts",
     "lint": "eslint . --ext .ts",
@@ -22,6 +22,7 @@
     "@eslint/js": "^9.32.0",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.2.0",
     "@types/supertest": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
@@ -49,6 +50,7 @@
     "class-validator": "^0.14.2",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "reflect-metadata": "^0.2.2"
   },
   "mikro-orm": {

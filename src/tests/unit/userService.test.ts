@@ -1,11 +1,13 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-import { createUser } from '../../services/userService';
+import { createUser, loginUser } from '../../services/userService';
 import { User } from '../../entities/User';
 import { ErrorMessages } from '../../constants/error-messages';
 
 jest.mock('bcrypt');
+jest.mock('jsonwebtoken');
 
 describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트', () => {
   let em: EntityManager;
@@ -129,5 +131,69 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
     (userRepo.findOne as jest.Mock).mockResolvedValue({ phone: input.phone });
 
     await expect(createUser(em, input)).rejects.toThrow(ErrorMessages.EXISTING_PHONE);
+  });
+});
+
+describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', () => {
+  let em: EntityManager;
+  let userRepo: EntityRepository<User>;
+
+  beforeEach(() => {
+    userRepo = {
+      findOne: jest.fn()
+    } as unknown as EntityRepository<User>;
+
+    em = {
+      getRepository: jest.fn(() => userRepo)
+    } as unknown as EntityManager;
+  });
+
+  it('JWT 토큰 발급 성공', async () => {
+    const mockUser = {
+      id: 1,
+      username: 'test',
+      password: 'hashedPassword'
+    };
+    const input = {
+      username: 'test',
+      password: 'password'
+    };
+    const mockToken = 'access token';
+
+    (userRepo.findOne as jest.Mock).mockResolvedValue(mockUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    (jwt.sign as jest.Mock).mockReturnValue(mockToken);
+
+    const result = await loginUser(em, input);
+
+    expect(result.accessToken).toBe(mockToken);
+  });
+
+  it('존재하지 않는 username 사용 시 에러', async () => {
+    const input = {
+      username: 'test',
+      password: 'password'
+    };
+
+    (userRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(loginUser(em, input)).rejects.toThrow(ErrorMessages.LOGIN_FAILED);
+  });
+
+  it('password 틀릴 경우 에러', async () => {
+    const mockUser = {
+      id: 1,
+      username: 'test',
+      password: 'hashedPassword'
+    };
+    const input = {
+      username: 'test',
+      password: 'password'
+    };
+
+    (userRepo.findOne as jest.Mock).mockResolvedValue(mockUser);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+
+    await expect(loginUser(em, input)).rejects.toThrow(ErrorMessages.LOGIN_FAILED);
   });
 });
