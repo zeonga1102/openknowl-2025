@@ -62,4 +62,16 @@ describe('로그인 API POST /api/users/login 통합 테스트', () => {
     expect(result.status).toBe(401)
     expect(result.body.message).toBe(ErrorMessages.LOGIN_FAILED);
   });
+
+  it('username이 8자를 초과한 경우 실패', async () => {
+    const input = {
+      username: '123456789',
+      password: existingData.password
+    };
+
+    const result = await request(app).post(API).send(input);
+
+    expect(result.status).toBe(400)
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  });
 });
