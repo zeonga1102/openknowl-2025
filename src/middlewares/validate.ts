@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-export const validateDto = (dtoClass: any) => {
+export const validateBody = (dtoClass: any) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const instance = plainToInstance(dtoClass, req.body);
     const errors = await validate(instance);
