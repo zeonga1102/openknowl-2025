@@ -35,8 +35,8 @@ export async function createMClass(em: EntityManager, data: CreateMClassDto, req
 export async function getMClassList(em: EntityManager, data: GetMClassListQueryDto) {
   const repo = em.getRepository(MClass);
 
-  const where = data.last ? { id: { $lt: data.last }} : {}
-  const mclassList = await repo.find(where, { orderBy: { id: QueryOrder.DESC }, limit: data.limit })
+  const where = data.last ? { id: { $lt: data.last }} : {};
+  const mclassList = await repo.find(where, { orderBy: { id: QueryOrder.DESC }, limit: data.limit });
 
   return plainToInstance(MClassListItemDto, mclassList, { excludeExtraneousValues: true });
 }

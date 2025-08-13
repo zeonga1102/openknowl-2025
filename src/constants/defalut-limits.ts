@@ -1,3 +1,3 @@
 export const DefaultLimits = {
-    MCLASS: 10
+  MCLASS: 10
 };
