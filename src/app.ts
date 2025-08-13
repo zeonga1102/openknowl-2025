@@ -2,8 +2,7 @@ import express from 'express';
 import { RequestContext } from '@mikro-orm/postgresql';
 
 import { DI } from './index';
-import { userRouter } from './routes/userRoutes';
-import { mclassRouter } from './routes/mclassRoutes';
+import { userRouter, mclassRouter } from './routes';
 
 const app = express();
 app.use(express.json());

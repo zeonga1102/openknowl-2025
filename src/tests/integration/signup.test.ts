@@ -3,8 +3,8 @@ import bcrypt from 'bcrypt'
 
 import { DI, start } from '../../index';
 import app from '../../app';
-import { User } from '../../entities/User';
-import { ErrorMessages } from '../../constants/error-messages';
+import { User } from '../../entities';
+import { ErrorMessages } from '../../constants';
 
 const API = '/api/users/signup';
 

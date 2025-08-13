@@ -1,6 +1,6 @@
 import { IsString, Length, IsOptional, IsInt, Min, IsDateString, IsNotEmpty } from 'class-validator';
 
-import { ErrorMessages } from '../constants/error-messages';
+import { ErrorMessages } from '../constants';
 
 export class CreateMClassDto {
   @IsString({ message: ErrorMessages.STRING })

@@ -3,7 +3,7 @@ import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
 
 import { createMClass } from '../services/mclassService';
 import { assertAdmin } from '../utils/permissions';
-import { ErrorMessages } from '../constants/error-messages';
+import { ErrorMessages } from '../constants';
 
 export const create = async (req: Request, res: Response) => {
   try {

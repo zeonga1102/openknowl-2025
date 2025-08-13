@@ -2,8 +2,8 @@ import request from 'supertest';
 
 import { DI, start } from '../../index';
 import app from '../../app';
-import { MClass } from '../../entities/MClass';
-import { ErrorMessages } from '../../constants/error-messages';
+import { MClass } from '../../entities';
+import { ErrorMessages } from '../../constants';
 
 const API = '/api/mclasses';
 

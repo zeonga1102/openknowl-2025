@@ -2,11 +2,10 @@ import { EntityManager, EntityRepository } from '@mikro-orm/core';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import { User } from '../entities/User';
-import { CreateUserDto } from '../dtos/CreateUserDto';
-import { LoginDto } from '../dtos/LoginDto';
-import { ErrorMessages } from '../constants/error-messages';
-import { ENV } from '../config/env';
+import { User } from '../entities';
+import { CreateUserDto, LoginDto } from '../dtos';
+import { ErrorMessages } from '../constants';
+import { ENV } from '../config';
 
 export async function createUser(em: EntityManager, data: CreateUserDto) {
   const repo = em.getRepository(User);

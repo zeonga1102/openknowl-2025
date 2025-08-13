@@ -1,10 +1,8 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 
-import { UserPayload } from '../dtos/UserPayload';
-import { CreateMClassDto } from '../dtos/CreateMClassDto';
-import { MClass } from '../entities/MClass';
-import { User } from '../entities/User';
-import { ErrorMessages } from '../constants/error-messages';
+import { CreateMClassDto, UserPayload } from '../dtos';
+import { User, MClass } from '../entities';
+import { ErrorMessages } from '../constants';
 
 export async function createMClass(em: EntityManager, data: CreateMClassDto, requestUser: UserPayload) {
   const deadline = new Date(data.deadline);

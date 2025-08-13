@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
+import { CreateMClassDto } from '../dtos';
 import { validateDto } from '../middlewares/validate';
-import { CreateMClassDto } from '../dtos/CreateMClassDto';
 import { verifyJwt } from '../middlewares/authenticate';
 import { create } from '../controllers/mclassController';
 

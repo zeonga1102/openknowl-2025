@@ -3,8 +3,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { createUser, loginUser } from '../../services/userService';
-import { User } from '../../entities/User';
-import { ErrorMessages } from '../../constants/error-messages';
+import { User } from '../../entities';
+import { ErrorMessages } from '../../constants';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');

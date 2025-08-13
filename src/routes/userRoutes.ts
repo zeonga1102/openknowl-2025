@@ -2,8 +2,7 @@ import { Router } from 'express';
 
 import { signup, login } from '../controllers/userController';
 import { validateDto } from '../middlewares/validate';
-import { CreateUserDto } from '../dtos/CreateUserDto';
-import { LoginDto } from '../dtos/LoginDto';
+import { CreateUserDto, LoginDto } from '../dtos';
 
 const router = Router();
 

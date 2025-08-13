@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { ENV } from '../config/env';
-import { ErrorMessages } from '../constants/error-messages';
+import { ENV } from '../config';
+import { ErrorMessages } from '../constants';
 
 export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;

@@ -1,6 +1,6 @@
 import { IsEmail, IsOptional, IsString, IsBoolean, Length, Matches, IsNotEmpty } from 'class-validator';
 
-import { ErrorMessages } from '../constants/error-messages';
+import { ErrorMessages } from '../constants';
 
 export class CreateUserDto {
   @Length(1, 8, { message: ErrorMessages.USERNAME_LENGTH })

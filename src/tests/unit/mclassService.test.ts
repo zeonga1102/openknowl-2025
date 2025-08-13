@@ -1,8 +1,8 @@
 import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 
 import { createMClass } from '../../services/mclassService';
-import { MClass } from '../../entities/MClass';
-import { ErrorMessages } from '../../constants/error-messages';
+import { MClass } from '../../entities';
+import { ErrorMessages } from '../../constants';
 
 describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테스트', () => {
   let em: EntityManager;
