@@ -1,11 +1,10 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
 
 import { createMClass } from '../services/mclassService';
 import { assertAdmin } from '../utils/permissions';
-import { ErrorMessages } from '../constants';
 
-export const create = async (req: Request, res: Response) => {
+export const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
     assertAdmin(req.user);
 
@@ -13,11 +12,8 @@ export const create = async (req: Request, res: Response) => {
     const mclass = await createMClass(em, req.body, req.user!);
 
     return res.status(201).json(mclass);
-  } catch (err: any) {
-    if (err.message === ErrorMessages.FORBIDDEN) {
-      return res.status(403).json({ message: err.message });
-    }
-    
-    return res.status(400).json({ message: err.message });
+  }
+  catch (err: any) {
+    next(err);
   }
 };

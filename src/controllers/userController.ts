@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
-
-import { createUser, loginUser } from '../services/userService';
+import { NextFunction, Request, Response } from 'express';
 import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
 
-export const signup = async (req: Request, res: Response) => {
+import { createUser, loginUser } from '../services/userService';
+
+export const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const em = RequestContext.getEntityManager() as EntityManager;
     const user = await createUser(em, req.body);
@@ -12,11 +12,11 @@ export const signup = async (req: Request, res: Response) => {
     res.status(201).json(newUser);
   }
   catch (err: any) {
-    res.status(400).json({ message: err.message });
+    next(err);
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const em = RequestContext.getEntityManager() as EntityManager;
     const accessToken = await loginUser(em, req.body);
@@ -24,6 +24,6 @@ export const login = async (req: Request, res: Response) => {
     res.status(201).json(accessToken);
   }
   catch (err: any) {
-    res.status(401).json({ message: err.message });
+    next(err);
   }
 };

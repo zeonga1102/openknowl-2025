@@ -2,12 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 import { ENV } from '../config';
-import { ErrorMessages } from '../constants';
+import { UnauthorizedError } from '../errors';
 
 export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ message: ErrorMessages.UNAUTHORIZED });
+    return next(new UnauthorizedError());
   }
 
   const token = auth.split(' ')[1];
@@ -21,6 +21,6 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
     
     return next();
   } catch (err: any) {
-    return res.status(401).json({ message: ErrorMessages.UNAUTHORIZED });
+    return next(new UnauthorizedError());
   }
 };
