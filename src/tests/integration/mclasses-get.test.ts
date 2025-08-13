@@ -2,7 +2,7 @@ import request from 'supertest';
 
 import { DI, start } from '../../index';
 import app from '../../app';
-import { DefaultLimits } from '../../constants';
+import { DefaultLimits, ErrorMessages } from '../../constants';
 
 const API = '/api/mclasses';
 
@@ -54,7 +54,7 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
     const limit = 5;
     const last = 10;
     
-    const result = await request(app).get(API).query({ limit: limit, last: last});
+    const result = await request(app).get(API).query({ limit: limit, last: last });
 
     expect(result.status).toBe(200);
     expect(result.body.list).toBeInstanceOf(Array);
@@ -66,7 +66,7 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
     const limit = undefined;
     const last = 15;
     
-    const result = await request(app).get(API).query({ limit: limit, last: last});
+    const result = await request(app).get(API).query({ limit: limit, last: last });
 
     expect(result.status).toBe(200);
     expect(result.body.list).toBeInstanceOf(Array);
@@ -78,11 +78,41 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
     const limit = 5;
     const last = undefined;
     
-    const result = await request(app).get(API).query({ limit: limit, last: last});
+    const result = await request(app).get(API).query({ limit: limit, last: last });
 
     expect(result.status).toBe(200);
     expect(result.body.list).toBeInstanceOf(Array);
     expect(result.body.list.length).toBe(limit);
     expect(result.body.list[0].id).toBe(mclassListLength);
+  });
+
+  it('limit가 number가 아닐 경우 실패', async () => {
+    const limit = 'wrong';
+    const last = 10;
+    
+    const result = await request(app).get(API).query({ limit: limit, last: last });
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  });
+
+  it('limit가 1 미만인 경우 실패', async () => {
+    const limit = 0;
+    const last = 10;
+    
+    const result = await request(app).get(API).query({ limit: limit, last: last });
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  });
+
+  it('limit가 100 초과인 경우 실패', async () => {
+    const limit = 101;
+    const last = 10;
+    
+    const result = await request(app).get(API).query({ limit: limit, last: last });
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
   });
 });

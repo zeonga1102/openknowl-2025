@@ -125,20 +125,24 @@ describe('getMClassList unit test - M클래스 목록 조회 관련 서비스 �
   });
 
   it('mclass 목록 조회 성공', async () => {
-    const limit = 10;
-    const last = 1;
+    const input = {
+      limit: 10,
+      last: 1
+    }
 
-    await getMClassList(em, limit, last);
+    await getMClassList(em, input);
 
-    expect(mclassRepo.find).toHaveBeenCalledWith({ id: { $lt: last } },{ orderBy: { id: QueryOrder.DESC },limit: limit });
+    expect(mclassRepo.find).toHaveBeenCalledWith({ id: { $lt: input.last } },{ orderBy: { id: QueryOrder.DESC },limit: input.limit });
   });
 
   it('last가 없는 경우 where 없이 mclass 목록 조회 성공', async () => {
-    const limit = 10;
-    const last = undefined;
+    const input = {
+      limit: 10,
+      last: undefined
+    }
 
-    await getMClassList(em, limit, last);
+    await getMClassList(em, input);
 
-    expect(mclassRepo.find).toHaveBeenCalledWith({},{ orderBy: { id: QueryOrder.DESC },limit: limit });
+    expect(mclassRepo.find).toHaveBeenCalledWith({},{ orderBy: { id: QueryOrder.DESC },limit: input.limit });
   })
 });
