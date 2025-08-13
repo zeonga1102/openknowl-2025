@@ -28,6 +28,6 @@ export const ErrorMessages = {
 
   LOGIN_FAILED: '로그인 실패',
 
-  UNAUTHORIZED: '유효하지 않은 토큰입니다.',
+  UNAUTHORIZED: '인증 실패',
   FORBIDDEN: '권한이 없습니다.'
 };
