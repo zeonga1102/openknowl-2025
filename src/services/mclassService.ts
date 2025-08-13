@@ -1,6 +1,7 @@
-import { EntityManager } from '@mikro-orm/postgresql';
+import { EntityManager, QueryOrder } from '@mikro-orm/postgresql';
+import { plainToInstance } from 'class-transformer';
 
-import { CreateMClassDto, UserPayload } from '../dtos';
+import { CreateMClassDto, UserPayload, MClassListItemDto, GetMClassListQueryDto } from '../dtos';
 import { User, MClass } from '../entities';
 import { ErrorMessages } from '../constants';
 import { ValidationError } from '../errors';
@@ -29,6 +30,15 @@ export async function createMClass(em: EntityManager, data: CreateMClassDto, req
   await em.flush();
 
   return mclass;
+}
+
+export async function getMClassList(em: EntityManager, data: GetMClassListQueryDto) {
+  const repo = em.getRepository(MClass);
+
+  const where = data.last ? { id: { $lt: data.last }} : {};
+  const mclassList = await repo.find(where, { orderBy: { id: QueryOrder.DESC }, limit: data.limit });
+
+  return plainToInstance(MClassListItemDto, mclassList, { excludeExtraneousValues: true });
 }
 
 function validateDate(deadline: Date, startAt: Date, endAt: Date) {

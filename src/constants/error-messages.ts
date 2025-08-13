@@ -13,6 +13,8 @@ export const ErrorMessages = {
   TITLE_LENGTH: '제목은 50자 이하여야 합니다.',
   DESCRIPTION_LENGTH: '설명은 1000자 이하여야 합니다.',
 
+  GTE_1: '1 이상이어야 합니다.',
+  LTE_100: '100 이하여야 합니다.',
   MAX_PEOPLE_MINIMUM: '정원은 1명 이상이어야 합니다.',
   FEE_MINIMUM: '참가 비용은 0 이상이어야 합니다.',
     
