@@ -1,7 +1,9 @@
 import { Request, Response } from 'express';
+import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
 
 import { createUser, loginUser } from '../services/userService';
-import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
+import { BaseError } from '../errors';
+import { ErrorMessages } from '../constants';
 
 export const signup = async (req: Request, res: Response) => {
   try {
@@ -12,7 +14,12 @@ export const signup = async (req: Request, res: Response) => {
     res.status(201).json(newUser);
   }
   catch (err: any) {
-    res.status(400).json({ message: err.message });
+    if (err instanceof BaseError) {
+      res.status(err.statusCode).json({ message: err.message });
+    }
+    else {
+      res.status(500).json({ message:  ErrorMessages.UNHANDLED_ERROR });
+    }
   }
 };
 
@@ -24,6 +31,11 @@ export const login = async (req: Request, res: Response) => {
     res.status(201).json(accessToken);
   }
   catch (err: any) {
-    res.status(401).json({ message: err.message });
+    if (err instanceof BaseError) {
+      res.status(err.statusCode).json({ message: err.message });
+    }
+    else {
+      res.status(500).json({ message:  ErrorMessages.UNHANDLED_ERROR });
+    }
   }
 };

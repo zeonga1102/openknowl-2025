@@ -22,6 +22,7 @@ export const ErrorMessages = {
 
   WRONG_DATE: '유효하지 않은 날짜입니다.',
 
+  EXSITING_DATA: '존재하는 데이터입니다',
   EXISTING_USERNAME: '중복된 아이디입니다.',
   EXISTING_EMAIL: '중복된 이메일입니다.',
   EXISTING_PHONE: '중복된 휴대폰 번호입니다.',
@@ -29,5 +30,7 @@ export const ErrorMessages = {
   LOGIN_FAILED: '로그인 실패',
 
   UNAUTHORIZED: '인증 실패',
-  FORBIDDEN: '권한이 없습니다.'
+  FORBIDDEN: '권한이 없습니다.',
+
+  UNHANDLED_ERROR: '처리하지 못한 에러'
 };

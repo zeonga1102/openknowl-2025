@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { CreateMClassDto, UserPayload } from '../dtos';
 import { User, MClass } from '../entities';
 import { ErrorMessages } from '../constants';
+import { ValidationError } from '../errors';
 
 export async function createMClass(em: EntityManager, data: CreateMClassDto, requestUser: UserPayload) {
   const deadline = new Date(data.deadline);
@@ -34,16 +35,16 @@ function validateDate(deadline: Date, startAt: Date, endAt: Date) {
   const now = new Date();
   // 마감 시간 및 시작 시간은 현재 시간보다 커야 함
   if (deadline <= now || startAt <= now) {
-    throw new Error(ErrorMessages.WRONG_DATE);
+    throw new ValidationError(ErrorMessages.WRONG_DATE);
   }
 
   // 시작일시는 마감 시간보다 커야 함
   if (startAt <= deadline) {
-    throw new Error(ErrorMessages.WRONG_DATE);
+    throw new ValidationError(ErrorMessages.WRONG_DATE);
   }
 
   // 종료일시는 시작일시보다 커야 함
   if (endAt <= startAt) {
-    throw new Error(ErrorMessages.WRONG_DATE);
+    throw new ValidationError(ErrorMessages.WRONG_DATE);
   }
 }

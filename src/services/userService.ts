@@ -6,6 +6,7 @@ import { User } from '../entities';
 import { CreateUserDto, LoginDto } from '../dtos';
 import { ErrorMessages } from '../constants';
 import { ENV } from '../config';
+import { UnauthorizedError, ConflictError } from '../errors';
 
 export async function createUser(em: EntityManager, data: CreateUserDto) {
   const repo = em.getRepository(User);
@@ -31,10 +32,10 @@ export async function loginUser(em: EntityManager, data: LoginDto) {
   const repo = em.getRepository(User);
   
   const user = await repo.findOne({ username: data.username });
-  if (!user) throw new Error(ErrorMessages.LOGIN_FAILED);
+  if (!user) throw new UnauthorizedError(ErrorMessages.LOGIN_FAILED);
 
   const isEqual = await bcrypt.compare(data.password, user.password);
-  if (!isEqual) throw new Error(ErrorMessages.LOGIN_FAILED);
+  if (!isEqual) throw new UnauthorizedError(ErrorMessages.LOGIN_FAILED);
 
   const accessToken = jwt.sign(
     {
@@ -58,8 +59,8 @@ async function checkUserCreateData(repo: EntityRepository<User>, username: strin
   );
 
   if (existingUser) {
-    if (existingUser.username === username) throw new Error(ErrorMessages.EXISTING_USERNAME);
-    if (existingUser.email === email) throw new Error(ErrorMessages.EXISTING_EMAIL);
-    if (phone && existingUser.phone === phone) throw new Error(ErrorMessages.EXISTING_PHONE);
+    if (existingUser.username === username) throw new ConflictError(ErrorMessages.EXISTING_USERNAME);
+    if (existingUser.email === email) throw new ConflictError(ErrorMessages.EXISTING_EMAIL);
+    if (phone && existingUser.phone === phone) throw new ConflictError(ErrorMessages.EXISTING_PHONE);
   }
 }
