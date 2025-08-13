@@ -3,7 +3,6 @@ import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
 
 import { createMClass, getMClassList } from '../services/mclassService';
 import { assertAdmin } from '../utils/permissions';
-import { DefaultLimits } from '../constants';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -22,11 +21,7 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
 export const getList = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const em = RequestContext.getEntityManager() as EntityManager;
-
-    const limit = req.query.limit ? Number(req.query.limit) : DefaultLimits.MCLASS;
-    const last = req.query.last ? Number(req.query.last) : undefined;
-
-    const mclassList = await getMClassList(em, limit, last);
+    const mclassList = await getMClassList(em, req.validatedQuery!);
 
     return res.json({ list: mclassList });
   } catch (err: any) {
