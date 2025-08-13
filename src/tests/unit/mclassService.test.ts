@@ -20,6 +20,7 @@ describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테
     } as unknown as EntityRepository<MClass>;
 
     em = {
+      getReference: jest.fn(() => requestUser.id),
       getRepository: jest.fn(() => mclassRepo),
       flush: jest.fn(),
     } as unknown as EntityManager;
