@@ -1,6 +1,6 @@
 import { EntityManager, EntityRepository, QueryOrder } from '@mikro-orm/postgresql';
 
-import { createMClass, getMClassList, getMClassById } from '../../services/mclassService';
+import { createMClass, getMClassList, getMClassById, deleteMClassById } from '../../services/mclassService';
 import { MClass } from '../../entities';
 import { ErrorMessages } from '../../constants';
 import { NotFoundError } from '../../errors';
@@ -194,4 +194,35 @@ describe('getMClassById unit test - M클래스 상세 조회 관련 서비스 �
 
     await expect(getMClassById(em, 1)).rejects.toThrow(NotFoundError);
   });
-})
+});
+
+describe('deleteMclassById unit test - M클래스 삭제 관련 서비스 유닛 테스트', () => {
+  let em: EntityManager;
+  let mclassRepo: EntityRepository<MClass>;
+
+  beforeEach(() => {
+    mclassRepo = {
+      findOne: jest.fn()
+    } as unknown as EntityRepository<MClass>;
+
+    em = {
+      getRepository: jest.fn(() => mclassRepo),
+      flush: jest.fn()
+    } as unknown as EntityManager;
+  });
+
+  it('mclass 삭제 성공', async () => {
+    const mclassData = { id: 1 };
+    (mclassRepo.findOne as jest.Mock).mockResolvedValue(mclassData);
+
+    const result = await deleteMClassById(em, mclassData.id);
+
+    expect(result).toBe(mclassData.id);
+  });
+
+  it('존재하지 않거나 이미 삭제된 id인 경우 실패', async () => {
+    (mclassRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(deleteMClassById(em, 1)).rejects.toThrow(NotFoundError);
+  });
+});
