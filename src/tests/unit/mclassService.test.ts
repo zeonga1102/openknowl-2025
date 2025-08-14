@@ -133,7 +133,14 @@ describe('getMClassList unit test - M클래스 목록 조회 관련 서비스 �
 
     await getMClassList(em, input);
 
-    expect(mclassRepo.find).toHaveBeenCalledWith({ id: { $lt: input.last } },{ orderBy: { id: QueryOrder.DESC },limit: input.limit });
+    
+    expect(mclassRepo.find).toHaveBeenCalledWith(
+      { $and: [
+        { id: { $lt: input.last }},
+        { isDelete: false }
+      ] },
+      { orderBy: { id: QueryOrder.DESC }, limit: input.limit }
+    );
   });
 
   it('last가 없는 경우 where 없이 mclass 목록 조회 성공', async () => {
@@ -144,7 +151,7 @@ describe('getMClassList unit test - M클래스 목록 조회 관련 서비스 �
 
     await getMClassList(em, input);
 
-    expect(mclassRepo.find).toHaveBeenCalledWith({},{ orderBy: { id: QueryOrder.DESC },limit: input.limit });
+    expect(mclassRepo.find).toHaveBeenCalledWith({ isDelete: false },{ orderBy: { id: QueryOrder.DESC }, limit: input.limit });
   })
 });
 
@@ -175,8 +182,9 @@ describe('getMClassById unit test - M클래스 상세 조회 관련 서비스 �
     };
     (mclassRepo.findOne as jest.Mock).mockResolvedValue(mclassData);
 
-    const result = await getMClassById(em, 1);
+    const result = await getMClassById(em, mclassData.id);
 
+    expect(mclassRepo.findOne).toHaveBeenCalledWith({ $and: [{ id: mclassData.id }, { isDelete: false }] });
     expect(result).toEqual({
       id: mclassData.id,
       title: mclassData.title,
