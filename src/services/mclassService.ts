@@ -1,10 +1,10 @@
 import { EntityManager, QueryOrder } from '@mikro-orm/postgresql';
 import { plainToInstance } from 'class-transformer';
 
-import { CreateMClassDto, UserPayload, MClassListItemDto, GetMClassListQueryDto } from '../dtos';
+import { CreateMClassDto, UserPayload, MClassListItemDto, GetMClassListQueryDto, MClassDetailDto } from '../dtos';
 import { User, MClass } from '../entities';
 import { ErrorMessages } from '../constants';
-import { ValidationError } from '../errors';
+import { ValidationError, NotFoundError } from '../errors';
 
 export async function createMClass(em: EntityManager, data: CreateMClassDto, requestUser: UserPayload) {
   const deadline = new Date(data.deadline);
@@ -39,6 +39,17 @@ export async function getMClassList(em: EntityManager, data: GetMClassListQueryD
   const mclassList = await repo.find(where, { orderBy: { id: QueryOrder.DESC }, limit: data.limit });
 
   return plainToInstance(MClassListItemDto, mclassList, { excludeExtraneousValues: true });
+}
+
+export async function getMClassById(em: EntityManager, id: number) {
+  const repo = em.getRepository(MClass);
+
+  const mclass = await repo.findOne({ id: id });
+  if (!mclass) {
+    throw new NotFoundError();
+  }
+
+  return plainToInstance(MClassDetailDto, mclass, { excludeExtraneousValues: true });
 }
 
 function validateDate(deadline: Date, startAt: Date, endAt: Date) {

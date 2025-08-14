@@ -33,3 +33,9 @@ export class ForbiddenError extends BaseError {
     super(403, message);
   }
 }
+
+export class NotFoundError extends BaseError {
+  constructor(message = ErrorMessages.NOT_FOUND) {
+    super(404, message);
+  }
+}
