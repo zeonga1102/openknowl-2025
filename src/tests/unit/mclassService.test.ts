@@ -1,9 +1,9 @@
 import { EntityManager, EntityRepository, QueryOrder } from '@mikro-orm/postgresql';
 
-import { createMClass, getMClassList, getMClassById, deleteMClassById } from '../../services/mclassService';
-import { MClass } from '../../entities';
+import { createMClass, getMClassList, getMClassById, deleteMClassById, applyToMClass } from '../../services/mclassService';
+import { MClass, Application } from '../../entities';
 import { ErrorMessages } from '../../constants';
-import { NotFoundError } from '../../errors';
+import { ConflictError, NotFoundError } from '../../errors';
 
 describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테스트', () => {
   let em: EntityManager;
@@ -232,5 +232,85 @@ describe('deleteMclassById unit test - M클래스 삭제 관련 서비스 유닛
     (mclassRepo.findOne as jest.Mock).mockResolvedValue(null);
 
     await expect(deleteMClassById(em, 1)).rejects.toThrow(NotFoundError);
+  });
+});
+
+describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 테스트', () => {
+  let em: any;
+  let mclassRepo: any;
+  let appRepo: any;
+
+  const requestUser = {
+    id: 1,
+    username: 'test',
+    isAdmin: true
+  };
+
+  beforeEach(() => {
+    mclassRepo = {
+      findOne: jest.fn()
+    };
+
+    appRepo = {
+      create: jest.fn(),
+      count: jest.fn(),
+      findOne: jest.fn()
+    };
+
+    em = {
+      getRepository: jest.fn((entity) => {
+        if (entity === MClass) {
+          return mclassRepo;
+        }
+        else {
+          return appRepo;
+        }
+      }),
+      getReference: jest.fn(),
+      flush: jest.fn(),
+    };
+  });
+
+  it('application 저장 성공', async () => {
+    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    appRepo.count.mockResolvedValue(0);
+    appRepo.findOne.mockResolvedValue(null);
+
+    await applyToMClass(em, 1, requestUser);
+
+    expect(em.flush).toHaveBeenCalled();
+  });
+
+  it('존재하지 않는 mclass인 경우 실패', async () => {
+    mclassRepo.findOne.mockResolvedValue(null);
+
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(NotFoundError);
+  });
+
+  it('deadline이 현재 시간 이하인 경우 실패', async () => {
+    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10, deadline: new Date(Date.now() - 1000) });
+    appRepo.count.mockResolvedValue(0);
+    appRepo.findOne.mockResolvedValue(null);
+
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ConflictError);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ErrorMessages.DEADLINE_OVER);
+  });
+
+  it('application 수가 maxPeople 이상인 경우 실패', async () => {
+    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    appRepo.count.mockResolvedValue(100);
+    appRepo.findOne.mockResolvedValue(null);
+
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ConflictError);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ErrorMessages.MAX_PEOPLE_EXCESS);
+  });
+
+  it('해당 mclass와 user에 해당하는 application이 이미 존재한 경우 실패', async () => {
+    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    appRepo.count.mockResolvedValue(0);
+    appRepo.findOne.mockResolvedValue({ id: 1 });
+
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ConflictError);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ErrorMessages.ALREADY_APPLY);
   });
 });
