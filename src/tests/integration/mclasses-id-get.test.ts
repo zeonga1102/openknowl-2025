@@ -7,6 +7,8 @@ import { ErrorMessages } from '../../constants';
 const API = '/api/mclasses/';
 
 describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', () => {
+  let adminToken: string;
+
   const mclassData = {
     title: 'test class',
     description: 'class description',
@@ -30,7 +32,7 @@ describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', 
     };
     await request(app).post('/api/users/signup').send(adminUserData);
     const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
-    const adminToken = LoginResult.body.accessToken;
+    adminToken = LoginResult.body.accessToken;
 
     await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
   });
@@ -58,6 +60,15 @@ describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', 
       fee: mclassData.fee
     });
   });
+
+  it('삭제된 id로 조회할 경우 실패', async () => {
+    await request(app).delete(API + '1').set('Authorization', `Bearer ${adminToken}`);
+
+    const result = await request(app).get(API + '1');
+
+    expect(result.status).toBe(404);
+    expect(result.body.message).toBe(ErrorMessages.NOT_FOUND);
+  })
 
   it('존재하지 않는 id로 조회할 경우 실패', async () => {
     const result = await request(app).get(API + '100');

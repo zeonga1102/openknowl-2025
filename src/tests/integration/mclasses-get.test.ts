@@ -37,8 +37,10 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
     };
     const mclassListData = new Array(mclassListLength).fill(0).map(() => ({ ...mclassData }));
     for (const data of mclassListData) {
-      await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(data)
+      await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(data);
     }
+
+    await request(app).delete(API + '/2').set('Authorization', `Bearer ${adminToken}`);
   });
 
   afterAll(async () => {
@@ -85,6 +87,18 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
     expect(result.body.list.length).toBe(limit);
     expect(result.body.list[0].id).toBe(mclassListLength);
   });
+
+  it('삭제된 M클래스는 제외하고 목록 조회 성공', async () => {
+    const limit = 5;
+    const last = 7;
+    
+    const result = await request(app).get(API).query({ limit: limit, last: last });
+
+    expect(result.status).toBe(200);
+    expect(result.body.list).toBeInstanceOf(Array);
+    expect(result.body.list.length).toBe(limit);
+    expect(result.body.list[result.body.list.length - 1].id).toBe(1);
+  })
 
   it('limit가 number가 아닐 경우 실패', async () => {
     const limit = 'wrong';
