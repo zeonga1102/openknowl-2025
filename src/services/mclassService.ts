@@ -52,6 +52,25 @@ export async function getMClassById(em: EntityManager, id: number) {
   return plainToInstance(MClassDetailDto, mclass, { excludeExtraneousValues: true });
 }
 
+export async function deleteMClassById(em: EntityManager, id: number) {
+  const repo = em.getRepository(MClass);
+
+  const mclass = await repo.findOne({
+    $and: [
+      { id: id },
+      { isDelete: false }
+    ]}
+  );
+  if (!mclass) {
+    throw new NotFoundError();
+  }
+
+  mclass.isDelete = true;
+  await em.flush();
+
+  return mclass.id;
+}
+
 function validateDate(deadline: Date, startAt: Date, endAt: Date) {
   const now = new Date();
   // 마감 시간 및 시작 시간은 현재 시간보다 커야 함
