@@ -1,8 +1,9 @@
 import { EntityManager, EntityRepository, QueryOrder } from '@mikro-orm/postgresql';
 
-import { createMClass, getMClassList } from '../../services/mclassService';
+import { createMClass, getMClassList, getMClassById } from '../../services/mclassService';
 import { MClass } from '../../entities';
 import { ErrorMessages } from '../../constants';
+import { NotFoundError } from '../../errors';
 
 describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테스트', () => {
   let em: EntityManager;
@@ -146,3 +147,51 @@ describe('getMClassList unit test - M클래스 목록 조회 관련 서비스 �
     expect(mclassRepo.find).toHaveBeenCalledWith({},{ orderBy: { id: QueryOrder.DESC },limit: input.limit });
   })
 });
+
+describe('getMClassById unit test - M클래스 상세 조회 관련 서비스 유닛 테스트', () => {
+  let em: EntityManager;
+  let mclassRepo: EntityRepository<MClass>;
+
+  beforeEach(() => {
+    mclassRepo = {
+      findOne: jest.fn()
+    } as unknown as EntityRepository<MClass>;
+
+    em = {
+      getRepository: jest.fn(() => mclassRepo)
+    } as unknown as EntityManager;
+  });
+
+  it('mclass 상세 조회 성공', async () => {
+    const mclassData = {
+      id: 1,
+      title: 'test',
+      description: 'test description',
+      maxPeople: 10,
+      deadline: new Date(),
+      startAt: new Date(),
+      endAt: new Date(),
+      fee: 100
+    };
+    (mclassRepo.findOne as jest.Mock).mockResolvedValue(mclassData);
+
+    const result = await getMClassById(em, 1);
+
+    expect(result).toEqual({
+      id: mclassData.id,
+      title: mclassData.title,
+      description: mclassData.description,
+      maxPeople: mclassData.maxPeople,
+      deadline: mclassData.deadline,
+      startAt: mclassData.startAt,
+      endAt: mclassData.endAt,
+      fee: mclassData.fee
+    });
+  });
+
+  it('존재하지 않는 id인 경우 실패', async () => {
+    (mclassRepo.findOne as jest.Mock).mockResolvedValue(null);
+
+    await expect(getMClassById(em, 1)).rejects.toThrow(NotFoundError);
+  });
+})
