@@ -26,6 +26,9 @@ export class MClass extends BaseEntity {
   @Property()
   fee!: number;
 
+  @Property()
+  isDelete: boolean = false;
+
   @ManyToOne(() => User, { deleteRule: 'restrict' })
   createdUser!: User;
 }

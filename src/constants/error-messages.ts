@@ -33,7 +33,7 @@ export const ErrorMessages = {
 
   UNAUTHORIZED: '인증 실패',
   FORBIDDEN: '권한이 없습니다.',
-  NOT_FOUND: '존재하지 않습니다',
+  NOT_FOUND: '존재하지 않습니다.',
 
   UNHANDLED_ERROR: '처리하지 못한 에러'
 };
