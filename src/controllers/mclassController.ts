@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { EntityManager, RequestContext } from '@mikro-orm/postgresql';
 
-import { createMClass, getMClassById, getMClassList, deleteMClassById } from '../services/mclassService';
+import { createMClass, getMClassById, getMClassList, deleteMClassById, applyToMClass } from '../services/mclassService';
 import { assertAdmin } from '../utils/permissions';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
@@ -50,6 +50,18 @@ export const deleteMclass = async (req: Request, res: Response, next: NextFuncti
     const deletedId = await deleteMClassById(em, Number(req.params.id));
 
     return res.json({ id: deletedId });
+  }
+  catch (err: any) {
+    next(err);
+  }
+};
+
+export const apply = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const em = RequestContext.getEntityManager() as EntityManager;
+    const applicationId = await applyToMClass(em, Number(req.params.id), req.user!);
+
+    return res.json({ id: applicationId });
   }
   catch (err: any) {
     next(err);
