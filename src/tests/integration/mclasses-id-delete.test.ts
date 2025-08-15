@@ -8,7 +8,6 @@ const API = '/api/mclasses/';
 
 describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () => {
   let adminToken: string;
-  let mclassId: number
 
   beforeAll(async () => {
     await start;
@@ -24,18 +23,6 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
     await request(app).post('/api/users/signup').send(adminUserData);
     const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
     adminToken = LoginResult.body.accessToken;
-
-    const mclassData = {
-      title: 'test class',
-      description: 'class description',
-      maxPeople: 10,
-      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
-      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-      fee: 100
-    };
-    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
-    mclassId = createResult.body.id;
   });
 
   afterAll(async () => {
@@ -48,6 +35,18 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
   });
 
   it('M클래스 삭제 성공', async () => {
+    const mclassData = {
+      title: 'test class',
+      description: 'class description',
+      maxPeople: 10,
+      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclassId = createResult.body.id;
+
     const result = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
 
     expect(result.status).toBe(200);
@@ -55,7 +54,7 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
   })
 
   it('JWT가 없는 경우 실패', async () => {
-    const result = await request(app).delete(API + mclassId);
+    const result = await request(app).delete(API + 1);
 
     expect(result.status).toBe(401);
     expect(result.body.message).toBe(ErrorMessages.UNAUTHORIZED);
@@ -73,7 +72,7 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
     const LoginResult = await request(app).post('/api/users/login').send(commonUserData);
     const commomToken = LoginResult.body.accessToken;
 
-    const result = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${commomToken}`);
+    const result = await request(app).delete(API + 1).set('Authorization', `Bearer ${commomToken}`);
 
     expect(result.status).toBe(403);
     expect(result.body.message).toBe(ErrorMessages.FORBIDDEN);
@@ -87,9 +86,45 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
   });
 
   it('이미 삭제한 id인 경우 실패', async () => {
+    const mclassData = {
+      title: 'test class',
+      description: 'class description',
+      maxPeople: 10,
+      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclassId = createResult.body.id;
+
+    const successResult = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
+    expect(successResult.status).toBe(200);
+
+    const failureResult = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
+
+    expect(failureResult.status).toBe(404);
+    expect(failureResult.body.message).toBe(ErrorMessages.NOT_FOUND);
+  });
+
+  it('신청자가 있는 경우 실패', async () => {
+    const mclassData = {
+      title: 'test class',
+      description: 'class description',
+      maxPeople: 10,
+      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclassId = createResult.body.id;
+
+    await request(app).post(`${API}${mclassId}/apply`).set('Authorization', `Bearer ${adminToken}`);
+
     const result = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
 
-    expect(result.status).toBe(404);
-    expect(result.body.message).toBe(ErrorMessages.NOT_FOUND);
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.MCLASS_HAS_APPLICATION);
   });
 });
