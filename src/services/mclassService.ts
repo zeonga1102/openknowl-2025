@@ -1,4 +1,4 @@
-import { EntityManager, EntityRepository, QueryOrder } from '@mikro-orm/postgresql';
+import { EntityManager, EntityRepository, LockMode, QueryOrder } from '@mikro-orm/postgresql';
 import { plainToInstance } from 'class-transformer';
 
 import { CreateMClassDto, UserPayload, MClassListItemDto, GetMClassListQueryDto, MClassDetailDto } from '../dtos';
@@ -72,24 +72,35 @@ export async function deleteMClassById(em: EntityManager, id: number) {
 }
 
 export async function applyToMClass(em: EntityManager, id: number, requestUser: UserPayload) {
-  const mclassRepo = em.getRepository(MClass);
   const appRepo = em.getRepository(Application);
 
-  const mclass = await mclassRepo.findOne({ $and: [{ id: id }, { isDelete: false }] });
-  if (!mclass) {
-    throw new NotFoundError();
+  await em.begin();
+
+  try {
+    const mclass = await em.findOne(
+      MClass,
+      { $and: [{ id: id }, { isDelete: false }] },
+      { lockMode: LockMode.PESSIMISTIC_WRITE }
+    );
+    if (!mclass) {
+      throw new NotFoundError();
+    }
+
+    await assertApplication(appRepo, mclass, requestUser.id);
+
+    const application = new Application();
+    application.mclass = mclass;
+    application.user = em.getReference(User, requestUser.id);
+
+    appRepo.create(application);
+    await em.commit();
+    
+    return application.id;
   }
-
-  await assertApplication(appRepo, mclass, requestUser.id);
-
-  const application = new Application();
-  application.mclass = mclass;
-  application.user = em.getReference(User, requestUser.id);
-
-  appRepo.create(application);
-  await em.flush();
-
-  return application.id;
+  catch (err: any) {
+    await em.rollback();
+    throw err;
+  }
 }
 
 async function assertApplication(appRepo: EntityRepository<Application>, mclass: MClass, userId: number) {
