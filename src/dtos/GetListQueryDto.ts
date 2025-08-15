@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 
 import { ErrorMessages, DefaultLimits } from '../constants';
 
-export class GetMClassListQueryDto {
+export class GetListQueryDto {
   @IsOptional()
   @Min(1, { message: ErrorMessages.GTE_1 })
   @Max(100, { message: ErrorMessages.LTE_100 })
