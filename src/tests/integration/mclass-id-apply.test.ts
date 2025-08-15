@@ -103,24 +103,31 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
     };
     const mclass = await request(app).post('/api/mclasses').set('Authorization', `Bearer ${adminToken}`).send(mclassData);
 
-    const userData = {
-        username: 'user',
+    const requestList = [];
+    for (let i = 0; i < 5; i++) {
+      const userData = {
+        username: `user${i}`,
         password: 'password',
         name: 'user',
-        email: 'user@example.com',
+        email: `user${i}@example.com`,
         isAdmin: true
-    };
-    await request(app).post('/api/users/signup').send(userData);
-    const LoginResult = await request(app).post('/api/users/login').send(userData);
-    const userToken = LoginResult.body.accessToken;
+      };
+      await request(app).post('/api/users/signup').send(userData);
+      const LoginResult = await request(app).post('/api/users/login').send(userData);
+      const token = LoginResult.body.accessToken;
 
-    await request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${userToken}`);
+      requestList.push(request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${token}`));
+    }
 
-    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${adminToken}`);
+    const resultList = await Promise.allSettled(requestList);
 
-    expect(result.status).toBe(400);
-    expect(result.body.message).toBe(ErrorMessages.MAX_PEOPLE_EXCESS);
-  })
+    const successCount = resultList.filter(r => r.status === 'fulfilled' && r.value.status === 200).length;
+    expect(successCount).toBe(mclassData.maxPeople);
+
+    const failureList = resultList.filter(r => r.status === 'fulfilled' && r.value.status === 400);
+    expect(failureList.length).toBe(requestList.length - mclassData.maxPeople);
+    failureList.map((r: any) => expect(r.value.body.message).toBe(ErrorMessages.MAX_PEOPLE_EXCESS));
+  });
 
   it('이미 신청한 경우 실패', async () => {
     const mclassData = {
@@ -139,5 +146,5 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
 
     expect(result.status).toBe(400);
     expect(result.body.message).toBe(ErrorMessages.ALREADY_APPLY);
-  })
+  });
 });

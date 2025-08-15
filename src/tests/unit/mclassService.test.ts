@@ -237,7 +237,6 @@ describe('deleteMclassById unit test - M클래스 삭제 관련 서비스 유닛
 
 describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 테스트', () => {
   let em: any;
-  let mclassRepo: any;
   let appRepo: any;
 
   const requestUser = {
@@ -247,10 +246,6 @@ describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 �
   };
 
   beforeEach(() => {
-    mclassRepo = {
-      findOne: jest.fn()
-    };
-
     appRepo = {
       create: jest.fn(),
       count: jest.fn(),
@@ -258,59 +253,65 @@ describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 �
     };
 
     em = {
-      getRepository: jest.fn((entity) => {
-        if (entity === MClass) {
-          return mclassRepo;
-        }
-        else {
-          return appRepo;
-        }
-      }),
+      getRepository: jest.fn(() => appRepo),
       getReference: jest.fn(),
-      flush: jest.fn(),
+      findOne: jest.fn(),
+      begin: jest.fn(),
+      commit: jest.fn(),
+      rollback: jest.fn()
     };
   });
 
   it('application 저장 성공', async () => {
-    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
     appRepo.count.mockResolvedValue(0);
     appRepo.findOne.mockResolvedValue(null);
 
     await applyToMClass(em, 1, requestUser);
 
-    expect(em.flush).toHaveBeenCalled();
+    expect(em.begin).toHaveBeenCalled();
+    expect(em.commit).toHaveBeenCalled();
   });
 
   it('존재하지 않는 mclass인 경우 실패', async () => {
-    mclassRepo.findOne.mockResolvedValue(null);
+    em.findOne.mockResolvedValue(null);
 
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(NotFoundError);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(new NotFoundError());
+    expect(em.begin).toHaveBeenCalled();
+    expect(em.commit).not.toHaveBeenCalled();
+    expect(em.rollback).toHaveBeenCalled();
   });
 
   it('deadline이 현재 시간 이하인 경우 실패', async () => {
-    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10, deadline: new Date(Date.now() - 1000) });
+    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10, deadline: new Date(Date.now() - 1000) });
     appRepo.count.mockResolvedValue(0);
     appRepo.findOne.mockResolvedValue(null);
 
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ConflictError);
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ErrorMessages.DEADLINE_OVER);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(new ConflictError(ErrorMessages.DEADLINE_OVER));
+    expect(em.begin).toHaveBeenCalled();
+    expect(em.commit).not.toHaveBeenCalled();
+    expect(em.rollback).toHaveBeenCalled();
   });
 
   it('application 수가 maxPeople 이상인 경우 실패', async () => {
-    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
     appRepo.count.mockResolvedValue(100);
     appRepo.findOne.mockResolvedValue(null);
 
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ConflictError);
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ErrorMessages.MAX_PEOPLE_EXCESS);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(new ConflictError(ErrorMessages.MAX_PEOPLE_EXCESS));
+    expect(em.begin).toHaveBeenCalled();
+    expect(em.commit).not.toHaveBeenCalled();
+    expect(em.rollback).toHaveBeenCalled();
   });
 
   it('해당 mclass와 user에 해당하는 application이 이미 존재한 경우 실패', async () => {
-    mclassRepo.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
     appRepo.count.mockResolvedValue(0);
     appRepo.findOne.mockResolvedValue({ id: 1 });
 
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ConflictError);
-    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(ErrorMessages.ALREADY_APPLY);
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(new ConflictError(ErrorMessages.ALREADY_APPLY));
+    expect(em.begin).toHaveBeenCalled();
+    expect(em.commit).not.toHaveBeenCalled();
+    expect(em.rollback).toHaveBeenCalled();
   });
 });
