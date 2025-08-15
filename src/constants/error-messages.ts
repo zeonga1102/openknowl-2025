@@ -31,7 +31,8 @@ export const ErrorMessages = {
 
   DEADLINE_OVER: '마감 시간이 지났습니다.',
   MAX_PEOPLE_EXCESS: '정원 초과',
-  ALREADY_APPLY: '이미 신청한 클래스 입니다.',
+  ALREADY_APPLY: '이미 신청한 클래스입니다.',
+  MCLASS_HAS_APPLICATION: '신청자가 있는 클래스입니다.',
 
   LOGIN_FAILED: '로그인 실패',
 

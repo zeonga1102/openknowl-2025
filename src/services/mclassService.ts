@@ -53,9 +53,10 @@ export async function getMClassById(em: EntityManager, id: number) {
 }
 
 export async function deleteMClassById(em: EntityManager, id: number) {
-  const repo = em.getRepository(MClass);
+  const mclassRepo = em.getRepository(MClass);
+  const appRepo = em.getRepository(Application);
 
-  const mclass = await repo.findOne({
+  const mclass = await mclassRepo.findOne({
     $and: [
       { id: id },
       { isDelete: false }
@@ -63,6 +64,11 @@ export async function deleteMClassById(em: EntityManager, id: number) {
   );
   if (!mclass) {
     throw new NotFoundError();
+  }
+
+  const count = await appRepo.count({ mclass });
+  if (count) {
+    throw new ConflictError(ErrorMessages.MCLASS_HAS_APPLICATION);
   }
 
   mclass.isDelete = true;
