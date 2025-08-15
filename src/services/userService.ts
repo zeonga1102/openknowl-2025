@@ -59,8 +59,13 @@ async function checkUserCreateData(repo: EntityRepository<User>, username: strin
   );
 
   if (existingUser) {
+    // 이미 존재하는 username
     if (existingUser.username === username) throw new ConflictError(ErrorMessages.EXISTING_USERNAME);
+
+    // 이미 존재하는 email
     if (existingUser.email === email) throw new ConflictError(ErrorMessages.EXISTING_EMAIL);
+
+    // 이미 존재하는 phone
     if (phone && existingUser.phone === phone) throw new ConflictError(ErrorMessages.EXISTING_PHONE);
   }
 }
