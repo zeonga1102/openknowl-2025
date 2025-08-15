@@ -13,6 +13,7 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
+    // 회원가입 및 로그인하여 토큰 획득
     const adminUserData = {
         username: 'admin',
         password: 'password',
@@ -22,7 +23,8 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
     };
     await request(app).post('/api/users/signup').send(adminUserData);
     const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
-    adminToken = LoginResult.body.accessToken;
+
+    adminToken = `Bearer ${LoginResult.body.accessToken}`;
   });
 
   afterAll(async () => {
@@ -35,6 +37,7 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
   });
 
   it('M클래스 삭제 성공', async () => {
+    // M클래스 생성
     const mclassData = {
       title: 'test class',
       description: 'class description',
@@ -44,10 +47,10 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const createResult = await request(app).post(API).set('Authorization', adminToken).send(mclassData);
     const mclassId = createResult.body.id;
 
-    const result = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
+    const result = await request(app).delete(API + mclassId).set('Authorization', adminToken);
 
     expect(result.status).toBe(200);
     expect(result.body).toEqual({ id: mclassId });
@@ -61,6 +64,7 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
   });
 
   it('관리자가 아닌 유저가 요청한 경우 실패', async () => {
+    // isAdmin이 false인 사용자 회원가입 및 로그인하여 토큰 획득
     const commonUserData = {
       username: 'common',
       password: 'password',
@@ -79,13 +83,14 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
   })
 
   it('존재하지 않는 id인 경우 실패', async () => {
-    const result = await request(app).delete(API + '100').set('Authorization', `Bearer ${adminToken}`);
+    const result = await request(app).delete(API + '100').set('Authorization', adminToken);
 
     expect(result.status).toBe(404);
     expect(result.body.message).toBe(ErrorMessages.NOT_FOUND);
   });
 
   it('이미 삭제한 id인 경우 실패', async () => {
+    // M클래스 생성
     const mclassData = {
       title: 'test class',
       description: 'class description',
@@ -95,19 +100,21 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const createResult = await request(app).post(API).set('Authorization', adminToken).send(mclassData);
     const mclassId = createResult.body.id;
 
-    const successResult = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
+    // 동일한 M클래스 두번 삭제 요청
+    const successResult = await request(app).delete(API + mclassId).set('Authorization', adminToken);
     expect(successResult.status).toBe(200);
 
-    const failureResult = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
+    const failureResult = await request(app).delete(API + mclassId).set('Authorization', adminToken);
 
     expect(failureResult.status).toBe(404);
     expect(failureResult.body.message).toBe(ErrorMessages.NOT_FOUND);
   });
 
   it('신청자가 있는 경우 실패', async () => {
+    // M클래스 생성
     const mclassData = {
       title: 'test class',
       description: 'class description',
@@ -117,12 +124,13 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const createResult = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const createResult = await request(app).post(API).set('Authorization', adminToken).send(mclassData);
     const mclassId = createResult.body.id;
 
-    await request(app).post(`${API}${mclassId}/apply`).set('Authorization', `Bearer ${adminToken}`);
+    // M클래스 신청
+    await request(app).post(`${API}${mclassId}/apply`).set('Authorization', adminToken);
 
-    const result = await request(app).delete(API + mclassId).set('Authorization', `Bearer ${adminToken}`);
+    const result = await request(app).delete(API + mclassId).set('Authorization', adminToken);
 
     expect(result.status).toBe(400);
     expect(result.body.message).toBe(ErrorMessages.MCLASS_HAS_APPLICATION);

@@ -23,11 +23,11 @@ describe('getApplicationList unit test - 내 신청 내역 조회 관련 서비�
     await getMyApplicationList(em, input, requestUser);
 
     expect(appRepo.find).toHaveBeenCalledWith(
-      expect.objectContaining({
+      {
         user: requestUser.id,
         mclass: { id: { $lt: input.last }, isDelete: false }
-      }),
-      expect.anything()
+      },
+      expect.objectContaining({ limit: input.limit })
     );
   });
 
@@ -45,11 +45,8 @@ describe('getApplicationList unit test - 내 신청 내역 조회 관련 서비�
     await getMyApplicationList(em, input, requestUser);
 
     expect(appRepo.find).toHaveBeenCalledWith(
-      expect.objectContaining({
-        user: requestUser.id,
-        mclass: { isDelete: false }
-      }),
-      expect.anything()
+      { user: requestUser.id, mclass: { isDelete: false } },
+      expect.objectContaining({ limit: input.limit })
     );
   });
 });

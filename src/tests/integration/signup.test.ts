@@ -35,9 +35,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       isAdmin: false
     };
 
-    const result = await request(app)
-      .post(API)
-      .send(input);
+    const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
     expect(result.body).toMatchObject({
@@ -45,7 +43,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       name: input.name,
       email: input.email,
       phone: input.phone,
-      isAdmin: input.isAdmin,
+      isAdmin: input.isAdmin
     });
 
     // 비밀번호가 해시로 저장되었는지 확인
@@ -64,9 +62,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       isAdmin: true
     };
 
-    const result = await request(app)
-      .post(API)
-      .send(input);
+    const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
     expect(result.body.isAdmin).toBe(true);
@@ -81,77 +77,71 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       phone: '010-1234-5678'
     };
 
-    const result = await request(app)
-      .post(API)
-      .send(input);
+    const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
     expect(result.body.isAdmin).toBe(false);
   });
 
   it('phone이 주어지지 않은 경우 가입 성공', async () => {
-      const input = {
-        username: 'test',
-        password: 'password',
-        name: 'user',
-        email: 'test@example.com'
-      };
-  
-      const result = await request(app)
-      .post(API)
-      .send(input);
-  
-      expect(result.body.phone).toBe(undefined);
-    });
+    const input = {
+      username: 'test',
+      password: 'password',
+      name: 'user',
+      email: 'test@example.com'
+    };
 
-    it('username이 8자를 초과한 경우 가입 실패', async () => {
-      const input = {
-        username: '123456789',
-        password: 'password',
-        name: 'user',
-        email: 'test@example.com'
-      };
-  
-      const result = await request(app)
-      .post(API)
-      .send(input);
+    const result = await request(app).post(API).send(input);
 
-      expect(result.status).toBe(400);
-    })
+    expect(result.status).toBe(201);
+    expect(result.body.phone).toBe(undefined);
+  });
 
-    it('email 형식이 틀릴 경우 가입 실패', async () => {
-      const input = {
-        username: 'test',
-        password: 'password',
-        name: 'user',
-        email: 'test@example'
-      };
-  
-      const result = await request(app)
-      .post(API)
-      .send(input);
+  it('username이 8자를 초과한 경우 가입 실패', async () => {
+    const input = {
+      username: '123456789',
+      password: 'password',
+      name: 'user',
+      email: 'test@example.com'
+    };
 
-      expect(result.status).toBe(400);
-    })
+    const result = await request(app).post(API).send(input);
 
-    it('phone 형식이 틀릴 경우 가입 실패', async () => {
-      const input = {
-        username: 'test',
-        password: 'password',
-        name: 'user',
-        email: 'test@example.com',
-        phone: '0101234'
-      };
-  
-      const result = await request(app)
-      .post(API)
-      .send(input);
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  })
 
-      expect(result.status).toBe(400);
-    })
+  it('email 형식이 틀릴 경우 가입 실패', async () => {
+    const input = {
+      username: 'test',
+      password: 'password',
+      name: 'user',
+      email: 'test@example'
+    };
 
-    it('username이 중복인 경우 가입 실패', async () => {
-      const input = {
+    const result = await request(app).post(API).send(input);
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  })
+
+  it('phone 형식이 틀릴 경우 가입 실패', async () => {
+    const input = {
+      username: 'test',
+      password: 'password',
+      name: 'user',
+      email: 'test@example.com',
+      phone: '0101234'
+    };
+
+    const result = await request(app).post(API).send(input);
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  })
+
+  it('username이 중복인 경우 가입 실패', async () => {
+    const input = {
       username: 'test',
       password: 'password',
       name: 'user',
@@ -159,10 +149,8 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       phone: '010-1234-5678'
     };
 
-    const result1 = await request(app)
-      .post(API)
-      .send(input);
-    
+    // 동일한 username으로 두 번 가입
+    const result1 = await request(app).post(API).send(input);
     expect(result1.status).toBe(201);
 
     const result2 = await request(app)
@@ -174,7 +162,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
   })
 
   it('email이 중복인 경우 가입 실패', async () => {
-      const input = {
+    const input = {
       username: 'test',
       password: 'password',
       name: 'user',
@@ -182,10 +170,8 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       phone: '010-1234-5678'
     };
 
-    const result1 = await request(app)
-      .post(API)
-      .send(input);
-    
+    // 동일한 email로 두 번 가입
+    const result1 = await request(app).post(API).send(input);
     expect(result1.status).toBe(201);
 
     const result2 = await request(app)
@@ -197,7 +183,7 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
   })
 
   it('phone이 중복인 경우 가입 실패', async () => {
-      const input = {
+    const input = {
       username: 'test',
       password: 'password',
       name: 'user',
@@ -205,10 +191,8 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       phone: '010-1234-5678'
     };
 
-    const result1 = await request(app)
-      .post(API)
-      .send(input);
-    
+    // 동일한 phone으로 두 번 가입
+    const result1 = await request(app).post(API).send(input);
     expect(result1.status).toBe(201);
 
     const result2 = await request(app)

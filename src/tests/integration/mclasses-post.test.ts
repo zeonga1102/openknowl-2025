@@ -2,7 +2,6 @@ import request from 'supertest';
 
 import { DI, start } from '../../index';
 import app from '../../app';
-import { MClass } from '../../entities';
 import { ErrorMessages } from '../../constants';
 
 const API = '/api/mclasses';
@@ -23,11 +22,12 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
+    // 회원가입 및 로그인하여 토큰 획득
     const signupResult = await request(app).post('/api/users/signup').send(adminUserData);
     const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
 
     requestUserId = signupResult.body.id;
-    adminToken = LoginResult.body.accessToken;
+    adminToken = `Bearer ${LoginResult.body.accessToken}`;
   });
 
   afterAll(async () => {
@@ -37,7 +37,6 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
 
   beforeEach(async () => {
     DI.em = DI.orm.em.fork();
-    await DI.em.nativeDelete(MClass, {});
   });
 
   it('M클래스 생성 성공', async () => {
@@ -51,7 +50,7 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       fee: 100
     };
 
-    const result = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(input)
+    const result = await request(app).post(API).set('Authorization', adminToken).send(input)
 
     expect(result.status).toBe(201);
     expect(result.body).toMatchObject({
@@ -84,6 +83,7 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
   });
 
   it('관리자가 아닌 유저가 요청한 경우 실패', async () => {
+    // isAdmin이 false인 사용자 회원가입 및 로그인하여 토큰 획득
     const commonUserData = {
         username: 'common',
         password: 'password',
@@ -122,7 +122,7 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       fee: 100
     };
 
-    const result = await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(input)
+    const result = await request(app).post(API).set('Authorization', adminToken).send(input)
 
     expect(result.status).toBe(400);
     expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);

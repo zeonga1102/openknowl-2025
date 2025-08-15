@@ -1,28 +1,26 @@
-import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { createUser, loginUser } from '../../services/userService';
-import { User } from '../../entities';
 import { ErrorMessages } from '../../constants';
+import { ConflictError, UnauthorizedError } from '../../errors';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
 
 describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트', () => {
-  let em: EntityManager;
-  let userRepo: EntityRepository<User>;
+  let em: any;
+  let userRepo: any;
 
   beforeEach(() => {
     userRepo = {
       create: jest.fn(),
       findOne: jest.fn()
-    } as unknown as EntityRepository<User>;
-
+    };
     em = {
       getRepository: jest.fn(() => userRepo),
       flush: jest.fn()
-    } as unknown as EntityManager;
+    };
   });
 
   it('user 저장 성공', async () => {
@@ -101,9 +99,9 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
       phone: '010-1234-5678'
     };
 
-    (userRepo.findOne as jest.Mock).mockResolvedValue({ username: input.username });
+    userRepo.findOne.mockResolvedValue({ username: input.username });
 
-    await expect(createUser(em, input)).rejects.toThrow(ErrorMessages.EXISTING_USERNAME);
+    await expect(createUser(em, input)).rejects.toThrow(new ConflictError(ErrorMessages.EXISTING_USERNAME));
   });
 
   it('email 중복 시 에러 발생', async () => {
@@ -114,9 +112,9 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
       email: 'test@example.com'
     };
 
-    (userRepo.findOne as jest.Mock).mockResolvedValue({ email: input.email });
+    userRepo.findOne.mockResolvedValue({ email: input.email });
 
-    await expect(createUser(em, input)).rejects.toThrow(ErrorMessages.EXISTING_EMAIL);
+    await expect(createUser(em, input)).rejects.toThrow(new ConflictError(ErrorMessages.EXISTING_EMAIL));
   });
 
   it('phone 중복 시 에러 발생', async () => {
@@ -128,24 +126,19 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
       phone: '010-1234-5678'
     };
 
-    (userRepo.findOne as jest.Mock).mockResolvedValue({ phone: input.phone });
+    userRepo.findOne.mockResolvedValue({ phone: input.phone });
 
-    await expect(createUser(em, input)).rejects.toThrow(ErrorMessages.EXISTING_PHONE);
+    await expect(createUser(em, input)).rejects.toThrow(new ConflictError(ErrorMessages.EXISTING_PHONE));
   });
 });
 
 describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', () => {
-  let em: EntityManager;
-  let userRepo: EntityRepository<User>;
+  let em: any;
+  let userRepo: any;
 
   beforeEach(() => {
-    userRepo = {
-      findOne: jest.fn()
-    } as unknown as EntityRepository<User>;
-
-    em = {
-      getRepository: jest.fn(() => userRepo)
-    } as unknown as EntityManager;
+    userRepo = { findOne: jest.fn() }
+    em = { getRepository: jest.fn(() => userRepo) }
   });
 
   it('JWT 토큰 발급 성공', async () => {
@@ -160,13 +153,13 @@ describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', ()
     };
     const mockToken = 'access token';
 
-    (userRepo.findOne as jest.Mock).mockResolvedValue(mockUser);
+    userRepo.findOne.mockResolvedValue(mockUser);
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
     (jwt.sign as jest.Mock).mockReturnValue(mockToken);
 
     const result = await loginUser(em, input);
 
-    expect(result.accessToken).toBe(mockToken);
+    expect(result).toBe(mockToken);
   });
 
   it('존재하지 않는 username 사용 시 에러', async () => {
@@ -175,9 +168,9 @@ describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', ()
       password: 'password'
     };
 
-    (userRepo.findOne as jest.Mock).mockResolvedValue(null);
+    userRepo.findOne.mockResolvedValue(null);
 
-    await expect(loginUser(em, input)).rejects.toThrow(ErrorMessages.LOGIN_FAILED);
+    await expect(loginUser(em, input)).rejects.toThrow(new UnauthorizedError(ErrorMessages.LOGIN_FAILED));
   });
 
   it('password 틀릴 경우 에러', async () => {
@@ -191,9 +184,9 @@ describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', ()
       password: 'password'
     };
 
-    (userRepo.findOne as jest.Mock).mockResolvedValue(mockUser);
+    userRepo.findOne.mockResolvedValue(mockUser);
     (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-    await expect(loginUser(em, input)).rejects.toThrow(ErrorMessages.LOGIN_FAILED);
+    await expect(loginUser(em, input)).rejects.toThrow(new UnauthorizedError(ErrorMessages.LOGIN_FAILED));
   });
 });

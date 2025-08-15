@@ -35,8 +35,10 @@ export async function createMClass(em: EntityManager, data: CreateMClassDto, req
 export async function getMClassList(em: EntityManager, data: GetListQueryDto) {
   const repo = em.getRepository(MClass);
 
-  const where = data.last ? { $and: [{ id: { $lt: data.last }}, { isDelete: false }] } : { isDelete: false };
-  const mclassList = await repo.find(where, { orderBy: { id: QueryOrder.DESC }, limit: data.limit });
+  const mclassList = await repo.find(
+    { ...(data.last ? {id: { $lt: data.last }} : {}), isDelete: false },
+    { orderBy: { id: QueryOrder.DESC }, limit: data.limit }
+  );
 
   return plainToInstance(MClassListItemDto, mclassList, { excludeExtraneousValues: true });
 }
@@ -44,7 +46,7 @@ export async function getMClassList(em: EntityManager, data: GetListQueryDto) {
 export async function getMClassById(em: EntityManager, id: number) {
   const repo = em.getRepository(MClass);
 
-  const mclass = await repo.findOne({ $and: [{ id: id }, { isDelete: false }] });
+  const mclass = await repo.findOne({ id: id, isDelete: false });
   if (!mclass) {
     throw new NotFoundError();
   }
@@ -56,12 +58,7 @@ export async function deleteMClassById(em: EntityManager, id: number) {
   const mclassRepo = em.getRepository(MClass);
   const appRepo = em.getRepository(Application);
 
-  const mclass = await mclassRepo.findOne({
-    $and: [
-      { id: id },
-      { isDelete: false }
-    ]}
-  );
+  const mclass = await mclassRepo.findOne({ id: id, isDelete: false });
   if (!mclass) {
     throw new NotFoundError();
   }
@@ -85,7 +82,7 @@ export async function applyToMClass(em: EntityManager, id: number, requestUser: 
   try {
     const mclass = await em.findOne(
       MClass,
-      { $and: [{ id: id }, { isDelete: false }] },
+      { id: id, isDelete: false },
       { lockMode: LockMode.PESSIMISTIC_WRITE }
     );
     if (!mclass) {
