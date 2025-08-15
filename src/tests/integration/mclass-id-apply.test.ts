@@ -2,7 +2,6 @@ import request from 'supertest';
 
 import { DI, start } from '../../index';
 import app from '../../app';
-import { Application, MClass } from '../../entities';
 import { ErrorMessages } from '../../constants';
 
 describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
@@ -14,6 +13,7 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
+    // 회원가입 및 로그인하여 토큰 획득
     const adminUserData = {
         username: 'admin',
         password: 'password',
@@ -24,7 +24,7 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
     await request(app).post('/api/users/signup').send(adminUserData);
     const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
 
-    adminToken = LoginResult.body.accessToken;
+    adminToken = `Bearer ${LoginResult.body.accessToken}`;
   });
 
   afterAll(async () => {
@@ -34,8 +34,6 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
 
   beforeEach(async () => {
     DI.em = DI.orm.em.fork();
-    await DI.em.nativeDelete(Application, {});
-    await DI.em.nativeDelete(MClass, {});
   });
 
   it('M클래스 신청 성공', async () => {
@@ -48,9 +46,9 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const mclass = await request(app).post('/api/mclasses').set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclass = await request(app).post('/api/mclasses').set('Authorization', adminToken).send(mclassData);
 
-    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${adminToken}`);
+    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', adminToken);
 
     expect(result.status).toBe(200);
     expect(result.body).toEqual({ id: 1 });
@@ -64,7 +62,7 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
   });
 
   it('존재하지 않는 M클래스 신청한 경우 실패', async () => {
-    const result = await request(app).post(getApi(1)).set('Authorization', `Bearer ${adminToken}`);
+    const result = await request(app).post(getApi(100)).set('Authorization', adminToken);
 
     expect(result.status).toBe(404);
     expect(result.body.message).toBe(ErrorMessages.NOT_FOUND);
@@ -80,12 +78,13 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const mclass = await request(app).post('/api/mclasses').set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclass = await request(app).post('/api/mclasses').set('Authorization', adminToken).send(mclassData);
 
+    // 마감 시간 초과
     console.log('====== 2초 대기 ======');
     await new Promise(r => setTimeout(r, 2000));
 
-    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${adminToken}`);
+    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', adminToken);
 
     expect(result.status).toBe(400);
     expect(result.body.message).toBe(ErrorMessages.DEADLINE_OVER);
@@ -101,8 +100,9 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const mclass = await request(app).post('/api/mclasses').set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclass = await request(app).post('/api/mclasses').set('Authorization', adminToken).send(mclassData);
 
+    // 5명 동시 신청
     const requestList = [];
     for (let i = 0; i < 5; i++) {
       const userData = {
@@ -139,10 +139,11 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
       fee: 100
     };
-    const mclass = await request(app).post('/api/mclasses').set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    const mclass = await request(app).post('/api/mclasses').set('Authorization', adminToken).send(mclassData);
 
-    await request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${adminToken}`);
-    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', `Bearer ${adminToken}`);
+    // 같은 M클래스 같은 사용자로 2번 신청
+    await request(app).post(getApi(mclass.body.id)).set('Authorization', adminToken);
+    const result = await request(app).post(getApi(mclass.body.id)).set('Authorization', adminToken);
 
     expect(result.status).toBe(400);
     expect(result.body.message).toBe(ErrorMessages.ALREADY_APPLY);

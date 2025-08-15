@@ -8,6 +8,7 @@ const API = '/api/mclasses/';
 
 describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', () => {
   let adminToken: string;
+  let mclassId: number;
 
   const mclassData = {
     title: 'test class',
@@ -23,18 +24,22 @@ describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', 
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
+    // 1. 회원가입 및 로그인하여 토큰 획득
     const adminUserData = {
-        username: 'admin',
-        password: 'password',
-        name: 'admin',
-        email: 'admin@example.com',
-        isAdmin: true
+      username: 'admin',
+      password: 'password',
+      name: 'admin',
+      email: 'admin@example.com',
+      isAdmin: true
     };
     await request(app).post('/api/users/signup').send(adminUserData);
     const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
-    adminToken = LoginResult.body.accessToken;
 
-    await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(mclassData);
+    adminToken = `Bearer ${LoginResult.body.accessToken}`;
+
+    // 2. M클래스 생성
+    const mclass = await request(app).post(API).set('Authorization', adminToken).send(mclassData);
+    mclassId = mclass.body.id;
   });
 
   afterAll(async () => {
@@ -47,10 +52,11 @@ describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', 
   });
 
   it('M클래스 상세 조회 성공', async () => {
-    const result = await request(app).get(API + '1');
+    const result = await request(app).get(API + mclassId);
 
     expect(result.status).toBe(200);
-    expect(result.body).toMatchObject({
+    expect(result.body).toEqual({
+      id: mclassId,
       title: mclassData.title,
       description: mclassData.description,
       maxPeople: mclassData.maxPeople,
@@ -62,9 +68,10 @@ describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', 
   });
 
   it('삭제된 id로 조회할 경우 실패', async () => {
-    await request(app).delete(API + '1').set('Authorization', `Bearer ${adminToken}`);
+    // M클래스 삭제
+    await request(app).delete(API + mclassId).set('Authorization', adminToken);
 
-    const result = await request(app).get(API + '1');
+    const result = await request(app).get(API + mclassId);
 
     expect(result.status).toBe(404);
     expect(result.body.message).toBe(ErrorMessages.NOT_FOUND);

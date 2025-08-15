@@ -2,7 +2,6 @@ import request from 'supertest';
 
 import { DI, start } from '../../index';
 import app from '../../app';
-import { User } from '../../entities';
 import { ErrorMessages } from '../../constants';
 
 const API = '/api/users/login';
@@ -18,6 +17,9 @@ describe('로그인 API POST /api/users/login 통합 테스트', () => {
   beforeAll(async () => {
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
+
+    // 회원가입
+    await request(app).post('/api/users/signup').send(existingData);
   });
 
   afterAll(async () => {
@@ -27,16 +29,13 @@ describe('로그인 API POST /api/users/login 통합 테스트', () => {
 
   beforeEach(async () => {
     DI.em = DI.orm.em.fork();
-    await DI.em.nativeDelete(User, {});
-
-    await request(app).post('/api/users/signup').send(existingData);
   });
 
   it('로그인 성공', async () => {
     const result = await request(app).post(API).send(existingData);
 
     expect(result.status).toBe(201);
-    expect(result.body).toHaveProperty('accessToken');
+    expect(result.body).toEqual({ accessToken: expect.any(String) });
   });
 
   it('존재하지 않는 아이디로 로그인 시 실패', async () => {
