@@ -204,17 +204,20 @@ describe('getMClassById unit test - M클래스 상세 조회 관련 서비스 �
   });
 });
 
-describe('deleteMclassById unit test - M클래스 삭제 관련 서비스 유닛 테스트', () => {
+describe('deleteMClassById unit test - M클래스 삭제 관련 서비스 유닛 테스트', () => {
   let em: EntityManager;
   let mclassRepo: EntityRepository<MClass>;
+  let appRepo: any;
 
   beforeEach(() => {
     mclassRepo = {
       findOne: jest.fn()
     } as unknown as EntityRepository<MClass>;
 
+    appRepo = { count: jest.fn() }
+
     em = {
-      getRepository: jest.fn(() => mclassRepo),
+      getRepository: jest.fn((entity) => entity === MClass ? mclassRepo : appRepo),
       flush: jest.fn()
     } as unknown as EntityManager;
   });
@@ -222,6 +225,7 @@ describe('deleteMclassById unit test - M클래스 삭제 관련 서비스 유닛
   it('mclass 삭제 성공', async () => {
     const mclassData = { id: 1 };
     (mclassRepo.findOne as jest.Mock).mockResolvedValue(mclassData);
+    appRepo.count.mockResolvedValue(0);
 
     const result = await deleteMClassById(em, mclassData.id);
 
@@ -233,6 +237,14 @@ describe('deleteMclassById unit test - M클래스 삭제 관련 서비스 유닛
 
     await expect(deleteMClassById(em, 1)).rejects.toThrow(NotFoundError);
   });
+
+  it('이미 신청한 사람이 있는 경우 실패', async () => {
+    const mclassData = { id: 1 };
+    (mclassRepo.findOne as jest.Mock).mockResolvedValue(mclassData);
+    appRepo.count.mockResolvedValue(1);
+
+    await expect(deleteMClassById(em, mclassData.id)).rejects.toThrow(new ConflictError(ErrorMessages.MCLASS_HAS_APPLICATION));
+  })
 });
 
 describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 테스트', () => {
