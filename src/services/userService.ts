@@ -3,10 +3,11 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { User } from '../entities';
-import { CreateUserDto, LoginDto } from '../dtos';
+import { CreateUserDto, CreateUserResponseDto, LoginDto } from '../dtos';
 import { ErrorMessages } from '../constants';
 import { ENV } from '../config';
 import { UnauthorizedError, ConflictError } from '../errors';
+import { plainToInstance } from 'class-transformer';
 
 export async function createUser(em: EntityManager, data: CreateUserDto) {
   const repo = em.getRepository(User);
@@ -22,10 +23,9 @@ export async function createUser(em: EntityManager, data: CreateUserDto) {
   user.isAdmin = data.isAdmin ?? false;
 
   repo.create(user);
-    
   await em.flush();
 
-  return user;
+  return plainToInstance(CreateUserResponseDto, user, { excludeExtraneousValues: true });
 }
 
 export async function loginUser(em: EntityManager, data: LoginDto) {
