@@ -38,12 +38,14 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
     const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
-    expect(result.body).toMatchObject({
+    expect(result.body).toEqual({
+      id: result.body.id,
       username: input.username,
       name: input.name,
       email: input.email,
       phone: input.phone,
-      isAdmin: input.isAdmin
+      isAdmin: input.isAdmin,
+      createdAt: result.body.createdAt
     });
 
     // 비밀번호가 해시로 저장되었는지 확인
@@ -65,7 +67,15 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
     const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
-    expect(result.body.isAdmin).toBe(true);
+    expect(result.body).toEqual({
+      id: result.body.id,
+      username: input.username,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      isAdmin: input.isAdmin,
+      createdAt: result.body.createdAt
+    });
   })
 
   it('isAdmin이 주어지지 않은 경우 일반 유저로 가입 성공', async () => {
@@ -80,7 +90,15 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
     const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
-    expect(result.body.isAdmin).toBe(false);
+    expect(result.body).toEqual({
+      id: result.body.id,
+      username: input.username,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      isAdmin: false,
+      createdAt: result.body.createdAt
+    });
   });
 
   it('phone이 주어지지 않은 경우 가입 성공', async () => {
@@ -94,7 +112,15 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
     const result = await request(app).post(API).send(input);
 
     expect(result.status).toBe(201);
-    expect(result.body.phone).toBe(undefined);
+    expect(result.body).toEqual({
+      id: result.body.id,
+      username: input.username,
+      name: input.name,
+      email: input.email,
+      phone: null,
+      isAdmin: false,
+      createdAt: result.body.createdAt
+    });
   });
 
   it('username이 8자를 초과한 경우 가입 실패', async () => {

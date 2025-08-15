@@ -53,7 +53,8 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
     const result = await request(app).post(API).set('Authorization', adminToken).send(input)
 
     expect(result.status).toBe(201);
-    expect(result.body).toMatchObject({
+    expect(result.body).toEqual({
+      id: result.body.id,
       title: input.title,
       description: input.description,
       maxPeople: input.maxPeople,
@@ -61,7 +62,33 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
       startAt: input.startAt,
       endAt: input.endAt,
       fee: input.fee,
-      createdUser: requestUserId
+      createdAt: result.body.createdAt
+    });
+  });
+
+  it('description이 없는 경우 M클래스 생성 성공', async () => {
+    const input = {
+      title: 'test class',
+      maxPeople: 10,
+      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+
+    const result = await request(app).post(API).set('Authorization', adminToken).send(input)
+
+    expect(result.status).toBe(201);
+    expect(result.body).toEqual({
+      id: result.body.id,
+      title: input.title,
+      description: null,
+      maxPeople: input.maxPeople,
+      deadline: input.deadline,
+      startAt: input.startAt,
+      endAt: input.endAt,
+      fee: input.fee,
+      createdAt: result.body.createdAt
     });
   });
 
