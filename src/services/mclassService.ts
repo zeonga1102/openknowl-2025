@@ -1,10 +1,10 @@
-import { EntityManager, QueryOrder } from '@mikro-orm/postgresql';
+import { EntityManager, EntityRepository, LockMode, QueryOrder } from '@mikro-orm/postgresql';
 import { plainToInstance } from 'class-transformer';
 
 import { CreateMClassDto, UserPayload, MClassListItemDto, GetMClassListQueryDto, MClassDetailDto } from '../dtos';
-import { User, MClass } from '../entities';
+import { User, MClass, Application } from '../entities';
 import { ErrorMessages } from '../constants';
-import { ValidationError, NotFoundError } from '../errors';
+import { ValidationError, NotFoundError, ConflictError } from '../errors';
 
 export async function createMClass(em: EntityManager, data: CreateMClassDto, requestUser: UserPayload) {
   const deadline = new Date(data.deadline);
@@ -69,6 +69,59 @@ export async function deleteMClassById(em: EntityManager, id: number) {
   await em.flush();
 
   return mclass.id;
+}
+
+export async function applyToMClass(em: EntityManager, id: number, requestUser: UserPayload) {
+  const appRepo = em.getRepository(Application);
+
+  await em.begin();
+
+  try {
+    const mclass = await em.findOne(
+      MClass,
+      { $and: [{ id: id }, { isDelete: false }] },
+      { lockMode: LockMode.PESSIMISTIC_WRITE }
+    );
+    if (!mclass) {
+      throw new NotFoundError();
+    }
+
+    await assertApplication(appRepo, mclass, requestUser.id);
+
+    const application = new Application();
+    application.mclass = mclass;
+    application.user = em.getReference(User, requestUser.id);
+
+    appRepo.create(application);
+    await em.commit();
+    
+    return application.id;
+  }
+  catch (err: any) {
+    await em.rollback();
+    throw err;
+  }
+}
+
+async function assertApplication(appRepo: EntityRepository<Application>, mclass: MClass, userId: number) {
+  const now = new Date();
+
+  // 마감 시간 초과
+  if (mclass.deadline <= now) {
+    throw new ConflictError(ErrorMessages.DEADLINE_OVER);
+  }
+
+  // 정원 초과
+  const currentCount = await appRepo.count({ mclass: mclass });
+  if (currentCount >= mclass.maxPeople) {
+    throw new ConflictError(ErrorMessages.MAX_PEOPLE_EXCESS);
+  }
+
+  // 이미 신청한 M클래스
+  const application = await appRepo.findOne({ mclass: mclass, user: userId });
+  if (application) {
+    throw new ConflictError(ErrorMessages.ALREADY_APPLY);
+  }
 }
 
 function validateDate(deadline: Date, startAt: Date, endAt: Date) {

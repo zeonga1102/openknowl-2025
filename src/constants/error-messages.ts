@@ -29,6 +29,10 @@ export const ErrorMessages = {
   EXISTING_EMAIL: '중복된 이메일입니다.',
   EXISTING_PHONE: '중복된 휴대폰 번호입니다.',
 
+  DEADLINE_OVER: '마감 시간이 지났습니다.',
+  MAX_PEOPLE_EXCESS: '정원 초과',
+  ALREADY_APPLY: '이미 신청한 클래스 입니다.',
+
   LOGIN_FAILED: '로그인 실패',
 
   UNAUTHORIZED: '인증 실패',

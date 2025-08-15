@@ -1,11 +1,11 @@
 import { Options, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
-import { User, MClass } from './entities';
+import { User, MClass, Application } from './entities';
 import { ENV } from './config';
 
 const config: Options = {
-  entities: [User, MClass],
+  entities: [User, MClass, Application],
   dbName: ENV.DB.NAME,
   driver: PostgreSqlDriver,
   user: ENV.DB.USER,
