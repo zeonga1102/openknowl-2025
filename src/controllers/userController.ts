@@ -21,7 +21,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const em = RequestContext.getEntityManager() as EntityManager;
     const accessToken = await loginUser(em, req.body);
 
-    res.status(201).json(accessToken);
+    res.status(201).json({ accessToken });
   }
   catch (err: any) {
     next(err);

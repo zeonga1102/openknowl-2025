@@ -46,7 +46,7 @@ export async function loginUser(em: EntityManager, data: LoginDto) {
     ENV.JWT.SECRET_KEY
   );
 
-  return { accessToken };
+  return accessToken;
 }
 
 async function checkUserCreateData(repo: EntityRepository<User>, username: string, email: string, phone?: string) {
