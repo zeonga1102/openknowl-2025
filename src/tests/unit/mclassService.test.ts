@@ -37,7 +37,8 @@ describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테
 
     const result = await createMClass(em, input, requestUser);
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
+      id: result.id,
       title: input.title,
       description: input.description,
       maxPeople: input.maxPeople,
@@ -45,7 +46,32 @@ describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테
       startAt: new Date(input.startAt),
       endAt: new Date(input.endAt),
       fee: input.fee,
-      createdUser: requestUser.id
+      createdAt: result.createdAt
+    });
+  });
+
+  it('description이 없는 경우 mclass 저장 성공', async () => {
+    const input = {
+      title: 'test class',
+      maxPeople: 10,
+      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+
+    const result = await createMClass(em, input, requestUser);
+
+    expect(result).toEqual({
+      id: result.id,
+      title: input.title,
+      description: null,
+      maxPeople: input.maxPeople,
+      deadline: new Date(input.deadline),
+      startAt: new Date(input.startAt),
+      endAt: new Date(input.endAt),
+      fee: input.fee,
+      createdAt: result.createdAt
     });
   });
 

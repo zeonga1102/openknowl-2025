@@ -38,13 +38,14 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
 
     const result = await createUser(em, input);
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
+      id: result.id,
       username: input.username,
-      password: hashedPassword,
       name: input.name,
       email: input.email,
       phone: input.phone,
       isAdmin: input.isAdmin,
+      createdAt: result.createdAt
     });
   });
 
@@ -60,7 +61,15 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
 
     const result = await createUser(em, input);
 
-    expect(result.isAdmin).toBe(true);
+    expect(result).toEqual({
+      id: result.id,
+      username: input.username,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      isAdmin: input.isAdmin,
+      createdAt: result.createdAt
+    });
   });
 
   it('isAdmin이 없는 user 저장 성공', async () => {
@@ -74,7 +83,15 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
 
     const result = await createUser(em, input);
 
-    expect(result.isAdmin).toBe(false);
+    expect(result).toEqual({
+      id: result.id,
+      username: input.username,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      isAdmin: false,
+      createdAt: result.createdAt
+    });
   });
 
   it('phone이 없는 user 저장 성공', async () => {
@@ -87,7 +104,15 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
 
     const result = await createUser(em, input);
 
-    expect(result.phone).toBe(undefined);
+    expect(result).toEqual({
+      id: result.id,
+      username: input.username,
+      name: input.name,
+      email: input.email,
+      phone: null,
+      isAdmin: false,
+      createdAt: result.createdAt
+    });
   });
 
   it('username 중복 시 에러 발생', async () => {

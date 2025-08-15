@@ -1,7 +1,7 @@
 import { EntityManager, EntityRepository, LockMode, QueryOrder } from '@mikro-orm/postgresql';
 import { plainToInstance } from 'class-transformer';
 
-import { CreateMClassDto, UserPayload, MClassListItemDto, GetListQueryDto, MClassDetailDto } from '../dtos';
+import { CreateMClassDto, UserPayload, MClassListItemDto, GetListQueryDto, MClassDetailDto, CreateMClassResponseDto } from '../dtos';
 import { User, MClass, Application } from '../entities';
 import { ErrorMessages } from '../constants';
 import { ValidationError, NotFoundError, ConflictError } from '../errors';
@@ -29,7 +29,7 @@ export async function createMClass(em: EntityManager, data: CreateMClassDto, req
   repo.create(mclass);
   await em.flush();
 
-  return mclass;
+  return plainToInstance(CreateMClassResponseDto, mclass, { excludeExtraneousValues: true });
 }
 
 export async function getMClassList(em: EntityManager, data: GetListQueryDto) {

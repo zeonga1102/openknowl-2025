@@ -8,8 +8,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     const em = RequestContext.getEntityManager() as EntityManager;
     const user = await createUser(em, req.body);
 
-    const { password, ...newUser } = user;
-    res.status(201).json(newUser);
+    return res.status(201).json(user);
   }
   catch (err: any) {
     next(err);
@@ -21,7 +20,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const em = RequestContext.getEntityManager() as EntityManager;
     const accessToken = await loginUser(em, req.body);
 
-    res.status(201).json({ accessToken });
+    return res.status(201).json({ accessToken });
   }
   catch (err: any) {
     next(err);

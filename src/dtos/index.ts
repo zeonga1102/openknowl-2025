@@ -7,3 +7,5 @@ export * from './GetListQueryDto';
 export * from './MClassDetailDto';
 export * from './IdParamDto';
 export * from './ApplicationListItemDto';
+export * from './CreateUserResponseDto';
+export * from './CreateMclassResponseDto';
