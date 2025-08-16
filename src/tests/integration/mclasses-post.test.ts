@@ -3,31 +3,20 @@ import request from 'supertest';
 import { DI, start } from '../../index';
 import app from '../../app';
 import { ErrorMessages } from '../../constants';
+import { getBearerToken } from '../utils';
 
 const API = '/api/mclasses';
 
 describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
-  let requestUserId: number;
   let adminToken: string;
-
-  const adminUserData = {
-    username: 'admin',
-    password: 'password',
-    name: 'admin',
-    email: 'admin@example.com',
-    isAdmin: true
-  };
 
   beforeAll(async () => {
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
-    // 회원가입 및 로그인하여 토큰 획득
-    const signupResult = await request(app).post('/api/users/signup').send(adminUserData);
-    const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
-
-    requestUserId = signupResult.body.id;
-    adminToken = `Bearer ${LoginResult.body.accessToken}`;
+    // 관리자 토큰 획득
+    DI.em = DI.orm.em.fork();
+    adminToken = await getBearerToken(DI.em);
   });
 
   afterAll(async () => {

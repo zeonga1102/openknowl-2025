@@ -3,6 +3,7 @@ import request from "supertest";
 import { DI, start } from '../../index';
 import app from '../../app';
 import { DefaultLimits, ErrorMessages } from "../../constants";
+import { getBearerToken } from "../utils";
 
 const API = '/api/users/applications';
 
@@ -19,30 +20,21 @@ describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스
     endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
     fee: 100
   };
+  
   beforeAll(async () => {
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
-    // 1. 회원가입 및 로그인하여 토큰 획득
-    const adminUserData = {
-      username: 'admin',
-      password: 'password',
-      name: 'admin',
-      email: 'admin@example.com',
-      isAdmin: true
-    };
-    await request(app).post('/api/users/signup').send(adminUserData);
-    const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
-
-    adminToken = `Bearer ${LoginResult.body.accessToken}`;
+    // 1. 관리자 토큰 획득
+    DI.em = DI.orm.em.fork();
+    adminToken = await getBearerToken(DI.em);
 
     // 2. M클래스 applicationCount 개 생성
     for (let i = 0; i < applicationCount; i++) {
       const mclass = await request(app).post('/api/mclasses').set('Authorization', adminToken).send(mclassData);
-      const mclassId = mclass.body.id
   
       // 3. 생성한 M클래스 신청
-      await request(app).post(`/api/mclasses/${mclassId}/apply`).set('Authorization', adminToken);
+      await request(app).post(`/api/mclasses/${mclass.body.id}/apply`).set('Authorization', adminToken);
     }
   });
 
