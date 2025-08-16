@@ -55,7 +55,8 @@ describe('M클래스 상세 조회 API GET /api/mclasses/:id 통합 테스트', 
       deadline: mclassData.deadline,
       startAt: mclassData.startAt,
       endAt: mclassData.endAt,
-      fee: mclassData.fee
+      fee: mclassData.fee,
+      createdAt: result.body.createdAt
     });
   });
 

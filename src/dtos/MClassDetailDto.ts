@@ -24,4 +24,7 @@ export class MClassDetailDto {
 
   @Expose()
   fee: number;
+
+  @Expose()
+  createdAt: Date;
 }
