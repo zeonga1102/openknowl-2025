@@ -21,4 +21,7 @@ export class MClassListItemDto {
   @Expose()
   @Type(() => Date)
   endAt: Date;
+
+  @Expose()
+  createdAt: Date;
 }
