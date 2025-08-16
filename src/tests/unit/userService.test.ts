@@ -30,7 +30,6 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
       name: 'user',
       email: 'test@example.com',
       phone: '010-1234-5678',
-      isAdmin: false,
     };
 
     const hashedPassword = 'hashedpassword';
@@ -44,52 +43,6 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
       name: input.name,
       email: input.email,
       phone: input.phone,
-      isAdmin: input.isAdmin,
-      createdAt: result.createdAt
-    });
-  });
-
-  it('isAdmin이 true인 유저 저장 성공', async () => {
-    const input = {
-      username: 'test',
-      password: 'password',
-      name: 'user',
-      email: 'test@example.com',
-      phone: '010-1234-5678',
-      isAdmin: true,
-    };
-
-    const result = await createUser(em, input);
-
-    expect(result).toEqual({
-      id: result.id,
-      username: input.username,
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      isAdmin: input.isAdmin,
-      createdAt: result.createdAt
-    });
-  });
-
-  it('isAdmin이 없는 user 저장 성공', async () => {
-    const input = {
-      username: 'test',
-      password: 'password',
-      name: 'user',
-      email: 'test@example.com',
-      phone: '010-1234-5678'
-    };
-
-    const result = await createUser(em, input);
-
-    expect(result).toEqual({
-      id: result.id,
-      username: input.username,
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      isAdmin: false,
       createdAt: result.createdAt
     });
   });
@@ -110,7 +63,6 @@ describe('createUser unit test - 회원가입 관련 서비스 유닛 테스트'
       name: input.name,
       email: input.email,
       phone: null,
-      isAdmin: false,
       createdAt: result.createdAt
     });
   });

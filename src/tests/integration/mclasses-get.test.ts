@@ -3,6 +3,7 @@ import request from 'supertest';
 import { DI, start } from '../../index';
 import app from '../../app';
 import { DefaultLimits, ErrorMessages } from '../../constants';
+import { getBearerToken } from '../utils';
 
 const API = '/api/mclasses';
 
@@ -24,27 +25,18 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
     await start;
     await DI.orm.getSchemaGenerator().refreshDatabase();
 
-    // 1. 회원가입 및 로그인하여 토큰 획득
-    const adminUserData = {
-      username: 'admin',
-      password: 'password',
-      name: 'admin',
-      email: 'admin@example.com',
-      isAdmin: true
-    };
-    await request(app).post('/api/users/signup').send(adminUserData);
-    const LoginResult = await request(app).post('/api/users/login').send(adminUserData);
-
-    adminToken = LoginResult.body.accessToken;
+    // 관리자 토큰 획득
+    DI.em = DI.orm.em.fork();
+    adminToken = await getBearerToken(DI.em);
 
     // 2. M클래스 mclassListLength 개 생성
     const mclassListData = new Array(mclassListLength).fill(0).map(() => ({ ...mclassData }));
     for (const data of mclassListData) {
-      await request(app).post(API).set('Authorization', `Bearer ${adminToken}`).send(data);
+      await request(app).post(API).set('Authorization', adminToken).send(data);
     }
 
     // 3. id가 2인 M클래스 삭제
-    await request(app).delete(API + '/2').set('Authorization', `Bearer ${adminToken}`);
+    await request(app).delete(API + '/2').set('Authorization', adminToken);
   });
 
   afterAll(async () => {

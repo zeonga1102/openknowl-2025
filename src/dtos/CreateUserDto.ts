@@ -25,8 +25,4 @@ export class CreateUserDto {
   @IsOptional()
   @Matches(/^010-\d{4}-\d{4}$/, { message: ErrorMessages.INVALID_PHONE })
   phone?: string;
-
-  @IsOptional()
-  @IsBoolean({ message: ErrorMessages.BOOLEAN })
-  isAdmin?: boolean;
 }

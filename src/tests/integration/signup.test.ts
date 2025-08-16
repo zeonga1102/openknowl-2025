@@ -25,14 +25,13 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
     await DI.em.nativeDelete(User, {})
   });
 
-  it('일반 유저 회원가입 성공', async () => {
+  it('회원가입 성공', async () => {
     const input = {
       username: 'test',
       password: 'password',
       name: 'user',
       email: 'test@example.com',
       phone: '010-1234-5678',
-      isAdmin: false
     };
 
     const result = await request(app).post(API).send(input);
@@ -44,7 +43,6 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       name: input.name,
       email: input.email,
       phone: input.phone,
-      isAdmin: input.isAdmin,
       createdAt: result.body.createdAt
     });
 
@@ -52,53 +50,9 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
     const user = await DI.em.findOneOrFail(User, { username: input.username });
     const isEqual = await bcrypt.compare(input.password, user.password);
     expect(isEqual).toBe(true);
-  });
 
-  it('관리자 유저 회원가입 성공', async () => {
-    const input = {
-      username: 'test',
-      password: 'password',
-      name: 'user',
-      email: 'test@example.com',
-      phone: '010-1234-5678',
-      isAdmin: true
-    };
-
-    const result = await request(app).post(API).send(input);
-
-    expect(result.status).toBe(201);
-    expect(result.body).toEqual({
-      id: result.body.id,
-      username: input.username,
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      isAdmin: input.isAdmin,
-      createdAt: result.body.createdAt
-    });
-  })
-
-  it('isAdmin이 주어지지 않은 경우 일반 유저로 가입 성공', async () => {
-    const input = {
-      username: 'test',
-      password: 'password',
-      name: 'user',
-      email: 'test@example.com',
-      phone: '010-1234-5678'
-    };
-
-    const result = await request(app).post(API).send(input);
-
-    expect(result.status).toBe(201);
-    expect(result.body).toEqual({
-      id: result.body.id,
-      username: input.username,
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      isAdmin: false,
-      createdAt: result.body.createdAt
-    });
+    // 관리자 여부가 false로 저장되었는지 확인
+    expect(user.isAdmin).toBe(false);
   });
 
   it('phone이 주어지지 않은 경우 가입 성공', async () => {
@@ -118,7 +72,6 @@ describe('회원가입 API POST /api/usres/signup 통합 테스트', () => {
       name: input.name,
       email: input.email,
       phone: null,
-      isAdmin: false,
       createdAt: result.body.createdAt
     });
   });
