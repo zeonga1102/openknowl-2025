@@ -6,19 +6,21 @@ import app from '../app';
 import { User } from '../entities';
 
 export async function getBearerToken(em: EntityManager, isAdmin: boolean = true) {
-  // 관리자 유저 저장
-  const adminUser = new User();
-  adminUser.username = 'admin';
-  adminUser.password = await bcrypt.hash('password', 10);;
-  adminUser.name = 'admin';
-  adminUser.email = 'admin@example.com';
-  adminUser.isAdmin = isAdmin;
+  const rand = Math.random().toString().substring(0, 8);
+
+  // 유저 저장
+  const user = new User();
+  user.username = rand;
+  user.password = await bcrypt.hash('password', 10);;
+  user.name = rand;
+  user.email = `${rand}@example.com`;
+  user.isAdmin = isAdmin;
   
   const userRepo = em.getRepository(User);
-  userRepo.create(adminUser);
+  userRepo.create(user);
   await em.flush();
   
   // 로그인 하여 토큰 획득
-  const LoginResult = await request(app).post('/api/users/login').send({ username: adminUser.username, password: 'password' });
+  const LoginResult = await request(app).post('/api/users/login').send({ username: user.username, password: 'password' });
   return `Bearer ${LoginResult.body.accessToken}`;
 }
