@@ -33,6 +33,7 @@ export const ErrorMessages = {
   MAX_PEOPLE_EXCESS: '정원 초과',
   ALREADY_APPLY: '이미 신청한 클래스입니다.',
   MCLASS_HAS_APPLICATION: '신청자가 있는 클래스입니다.',
+  CAN_NOT_APPLY_TO_OWN_MCLASS: '본인이 만든 M클래스는 신청할 수 없습니다.',
 
   LOGIN_FAILED: '로그인 실패',
 
