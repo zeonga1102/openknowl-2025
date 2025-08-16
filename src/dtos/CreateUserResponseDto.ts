@@ -16,10 +16,7 @@ export class CreateUserResponseDto {
     @Expose()
     @Transform(({ value }) => value ?? null)
     phone: string | null;
-
-    @Expose()
-    isAdmin: boolean;
-
+    
     @Expose()
     createdAt: Date;
 }

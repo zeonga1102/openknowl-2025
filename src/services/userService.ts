@@ -20,7 +20,6 @@ export async function createUser(em: EntityManager, data: CreateUserDto) {
   user.name = data.name;
   user.email = data.email;
   user.phone = data.phone;
-  user.isAdmin = data.isAdmin ?? false;
 
   repo.create(user);
   await em.flush();
