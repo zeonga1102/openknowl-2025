@@ -185,7 +185,8 @@ describe('getMClassById unit test - M클래스 상세 조회 관련 서비스 �
       deadline: new Date(),
       startAt: new Date(),
       endAt: new Date(),
-      fee: 100
+      fee: 100,
+      createdAt: new Date()
     };
     mclassRepo.findOne.mockResolvedValue(mclassData);
 
@@ -200,7 +201,8 @@ describe('getMClassById unit test - M클래스 상세 조회 관련 서비스 �
       deadline: mclassData.deadline,
       startAt: mclassData.startAt,
       endAt: mclassData.endAt,
-      fee: mclassData.fee
+      fee: mclassData.fee,
+      createdAt: mclassData.createdAt
     });
   });
 

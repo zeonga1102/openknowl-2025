@@ -63,7 +63,8 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
       maxPeople: mclassData.maxPeople,
       deadline: mclassData.deadline,
       startAt: mclassData.startAt,
-      endAt: mclassData.endAt
+      endAt: mclassData.endAt,
+      createdAt: result.body.list[0].createdAt
     });
   });
 
@@ -82,7 +83,8 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
       maxPeople: mclassData.maxPeople,
       deadline: mclassData.deadline,
       startAt: mclassData.startAt,
-      endAt: mclassData.endAt
+      endAt: mclassData.endAt,
+      createdAt: result.body.list[0].createdAt
     });
   });
 
@@ -101,7 +103,8 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
       maxPeople: mclassData.maxPeople,
       deadline: mclassData.deadline,
       startAt: mclassData.startAt,
-      endAt: mclassData.endAt
+      endAt: mclassData.endAt,
+      createdAt: result.body.list[0].createdAt
     });
   });
 
@@ -120,7 +123,8 @@ describe('M클래스 목록 조회 API GET /api/mclasses 통합 테스트', () =
       maxPeople: mclassData.maxPeople,
       deadline: mclassData.deadline,
       startAt: mclassData.startAt,
-      endAt: mclassData.endAt
+      endAt: mclassData.endAt,
+      createdAt: result.body.list[result.body.list.length - 1].createdAt
     });
   })
 
