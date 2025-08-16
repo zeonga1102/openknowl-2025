@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { CreateMClassDto, UserPayload, MClassListItemDto, GetListQueryDto, MClassDetailDto, CreateMClassResponseDto } from '../dtos';
 import { User, MClass, Application } from '../entities';
 import { ErrorMessages } from '../constants';
-import { ValidationError, NotFoundError, ConflictError } from '../errors';
+import { ValidationError, NotFoundError, ConflictError, ForbiddenError } from '../errors';
 
 export async function createMClass(em: EntityManager, data: CreateMClassDto, requestUser: UserPayload) {
   const deadline = new Date(data.deadline);
@@ -85,8 +85,14 @@ export async function applyToMClass(em: EntityManager, id: number, requestUser: 
       { id: id, isDelete: false },
       { lockMode: LockMode.PESSIMISTIC_WRITE }
     );
+    // 존재하지 않는 M클래스
     if (!mclass) {
       throw new NotFoundError();
+    }
+
+    // 본인이 만든 M클래스
+    if (mclass.createdUser.id == requestUser.id) {
+      throw new ForbiddenError(ErrorMessages.CAN_NOT_APPLY_TO_OWN_MCLASS);
     }
 
     await assertApplication(appRepo, mclass, requestUser.id);
