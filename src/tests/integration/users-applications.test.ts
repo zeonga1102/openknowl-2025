@@ -8,7 +8,7 @@ import { getBearerToken } from "../utils";
 const API = '/api/users/applications';
 
 describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스트', () => {
-  let adminToken: string;
+  let userToken: string;
 
   const applicationCount = 15;
   const mclassData = {
@@ -27,14 +27,17 @@ describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스
 
     // 1. 관리자 토큰 획득
     DI.em = DI.orm.em.fork();
-    adminToken = await getBearerToken(DI.em);
+    const adminToken = await getBearerToken(DI.em);
 
-    // 2. M클래스 applicationCount 개 생성
+    // 2. 다른 사용자 토큰 획득
+    userToken = await getBearerToken(DI.em, false);
+
+    // 3. M클래스 applicationCount 개 생성
     for (let i = 0; i < applicationCount; i++) {
       const mclass = await request(app).post('/api/mclasses').set('Authorization', adminToken).send(mclassData);
   
-      // 3. 생성한 M클래스 신청
-      await request(app).post(`/api/mclasses/${mclass.body.id}/apply`).set('Authorization', adminToken);
+      // 4. 생성한 M클래스 신청
+      await request(app).post(`/api/mclasses/${mclass.body.id}/apply`).set('Authorization', userToken);
     }
   });
 
@@ -52,7 +55,7 @@ describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스
       limit: 5,
       last: 10
     };
-    const result = await request(app).get(API).query(input).set('Authorization', adminToken)
+    const result = await request(app).get(API).query(input).set('Authorization', userToken)
 
     expect(result.status).toBe(200);
     expect(result.body.list).toBeInstanceOf(Array);
@@ -74,7 +77,7 @@ describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스
       last: 15
     };
     
-    const result = await request(app).get(API).query(input).set('Authorization', adminToken);
+    const result = await request(app).get(API).query(input).set('Authorization', userToken);
 
     expect(result.status).toBe(200);
     expect(result.body.list).toBeInstanceOf(Array);
@@ -95,7 +98,7 @@ describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스
       limit: 5,
       last: undefined
     };
-    const result = await request(app).get(API).query(input).set('Authorization', adminToken)
+    const result = await request(app).get(API).query(input).set('Authorization', userToken)
 
     expect(result.status).toBe(200);
     expect(result.body.list).toBeInstanceOf(Array);

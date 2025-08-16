@@ -119,8 +119,11 @@ describe('M클래스 삭제 API DELETE /api/mclasses/:id 통합 테스트', () =
     const createResult = await request(app).post(API).set('Authorization', adminToken).send(mclassData);
     const mclassId = createResult.body.id;
 
+    // 다른 사용자 토큰 획득
+    const token = await getBearerToken(DI.em, false);
+
     // M클래스 신청
-    await request(app).post(`${API}${mclassId}/apply`).set('Authorization', adminToken);
+    await request(app).post(`${API}${mclassId}/apply`).set('Authorization', token);
 
     const result = await request(app).delete(API + mclassId).set('Authorization', adminToken);
 

@@ -3,7 +3,7 @@ import { QueryOrder } from '@mikro-orm/postgresql';
 import { createMClass, getMClassList, getMClassById, deleteMClassById, applyToMClass } from '../../services/mclassService';
 import { MClass } from '../../entities';
 import { ErrorMessages } from '../../constants';
-import { ConflictError, NotFoundError, ValidationError } from '../../errors';
+import { ConflictError, ForbiddenError, NotFoundError, ValidationError } from '../../errors';
 
 describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테스트', () => {
   let em: any;
@@ -277,7 +277,11 @@ describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 �
   });
 
   it('application 저장 성공', async () => {
-    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    em.findOne.mockResolvedValue({
+      id: 1,
+      maxPeople: 10,
+      createdUser: { id: 2 }
+    });
     appRepo.count.mockResolvedValue(0);
     appRepo.findOne.mockResolvedValue(null);
 
@@ -296,8 +300,22 @@ describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 �
     expect(em.rollback).toHaveBeenCalled();
   });
 
+  it('본인이 만든 mclass인 경우 실패', async () => {
+    em.findOne.mockResolvedValue({ createdUser: requestUser })
+
+    await expect(applyToMClass(em, 1, requestUser)).rejects.toThrow(new ForbiddenError(ErrorMessages.CAN_NOT_APPLY_TO_OWN_MCLASS));
+    expect(em.begin).toHaveBeenCalled();
+    expect(em.commit).not.toHaveBeenCalled();
+    expect(em.rollback).toHaveBeenCalled();
+  });
+
   it('deadline이 현재 시간 이하인 경우 실패', async () => {
-    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10, deadline: new Date(Date.now() - 1000) });
+    em.findOne.mockResolvedValue({
+      id: 1,
+      maxPeople: 10,
+      deadline: new Date(Date.now() - 1000),
+      createdUser: { id: 2 }
+    });
     appRepo.count.mockResolvedValue(0);
     appRepo.findOne.mockResolvedValue(null);
 
@@ -308,7 +326,11 @@ describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 �
   });
 
   it('application 수가 maxPeople 이상인 경우 실패', async () => {
-    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    em.findOne.mockResolvedValue({
+      id: 1,
+      maxPeople: 10,
+      createdUser: { id: 2 }
+    });
     appRepo.count.mockResolvedValue(100);
     appRepo.findOne.mockResolvedValue(null);
 
@@ -319,7 +341,11 @@ describe('applyToMClass unit test - M클래스 신청 관련 서비스 유닛 �
   });
 
   it('해당 mclass와 user에 해당하는 application이 이미 존재한 경우 실패', async () => {
-    em.findOne.mockResolvedValue({ id: 1, maxPeople: 10 });
+    em.findOne.mockResolvedValue({
+      id: 1,
+      maxPeople: 10,
+      createdUser: { id: 2 }
+    });
     appRepo.count.mockResolvedValue(0);
     appRepo.findOne.mockResolvedValue({ id: 1 });
 
