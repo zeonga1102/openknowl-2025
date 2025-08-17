@@ -143,4 +143,55 @@ describe('M클래스 생성 API POST /api/mclasses 통합 테스트', () => {
     expect(result.status).toBe(400);
     expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
   });
+
+  it('deadline이 현재 시간보다 작을 경우 실패', async () => {
+    const input = {
+      title: 'test class',
+      description: 'class description',
+      maxPeople: 10,
+      deadline: new Date(Date.now() - 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+
+    const result = await request(app).post(API).set('Authorization', adminToken).send(input)
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  });
+
+  it('startAt이 deadlin보다 작을 경우 실패', async () => {
+    const input = {
+      title: 'test class',
+      description: 'class description',
+      maxPeople: 10,
+      deadline: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      fee: 100
+    };
+
+    const result = await request(app).post(API).set('Authorization', adminToken).send(input)
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  });
+
+  it('endAt이 startAt보다 작을 경우 실패', async () => {
+    const input = {
+      title: 'test class',
+      description: 'class description',
+      maxPeople: 10,
+      deadline: new Date(Date.now() - 1000 * 60).toISOString(),
+      startAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+      endAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+      fee: 100
+    };
+
+    const result = await request(app).post(API).set('Authorization', adminToken).send(input)
+
+    expect(result.status).toBe(400);
+    expect(result.body.message).toBe(ErrorMessages.VALIDATION_FAILED);
+  });
 });

@@ -74,62 +74,6 @@ describe('createMClass unit test - M클래스 생성 관련 서비스 유닛 테
       createdAt: result.createdAt
     });
   });
-
-  it('deadline이 과거인 경우 실패', async () => {
-    const input = {
-      title: 'test class',
-      description: 'class description',
-      maxPeople: 10,
-      deadline: new Date(Date.now() - 1000 * 60).toISOString(),
-      startAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-      fee: 100
-    };
-
-    await expect(createMClass(em, input, requestUser)).rejects.toThrow(new ValidationError(ErrorMessages.WRONG_DATE));
-  });
-
-  it('startAt이 과거인 경우 실패', async () => {
-    const input = {
-      title: 'test class',
-      description: 'class description',
-      maxPeople: 10,
-      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
-      startAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-      fee: 100
-    };
-
-    await expect(createMClass(em, input, requestUser)).rejects.toThrow(new ValidationError(ErrorMessages.WRONG_DATE));
-  });
-
-  it('startAt이 deadline보다 작은 경우 실패', async () => {
-    const input = {
-      title: 'test class',
-      description: 'class description',
-      maxPeople: 10,
-      deadline: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-      startAt: new Date(Date.now() + 1000 * 60).toISOString(),
-      endAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-      fee: 100
-    };
-
-    await expect(createMClass(em, input, requestUser)).rejects.toThrow(new ValidationError(ErrorMessages.WRONG_DATE));
-  });
-
-  it('endAt이 startAt보다 작은 경우 실패', async () => {
-    const input = {
-      title: 'test class',
-      description: 'class description',
-      maxPeople: 10,
-      deadline: new Date(Date.now() + 1000 * 60).toISOString(),
-      startAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-      endAt: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
-      fee: 100
-    };
-
-    await expect(createMClass(em, input, requestUser)).rejects.toThrow(new ValidationError(ErrorMessages.WRONG_DATE));
-  });
 });
 
 describe('getMClassList unit test - M클래스 목록 조회 관련 서비스 유닛 테스트', () => {
