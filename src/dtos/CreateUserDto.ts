@@ -1,4 +1,4 @@
-import { IsEmail, IsOptional, IsString, IsBoolean, Length, Matches, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Length, Matches, IsNotEmpty } from 'class-validator';
 
 import { ErrorMessages } from '../constants';
 

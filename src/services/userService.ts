@@ -58,7 +58,7 @@ export async function loginUser(em: EntityManager, data: LoginDto) {
 
   // refresh token db에 저장
   user.refreshToken = refreshToken;
-  await em.flush()
+  await em.flush();
 
   return { accessToken, refreshToken };
 }
