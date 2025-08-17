@@ -36,6 +36,9 @@ describe('로그인 API POST /api/users/login 통합 테스트', () => {
 
     expect(result.status).toBe(201);
     expect(result.body).toEqual({ accessToken: expect.any(String) });
+
+    const cookies = result.headers['set-cookie'] as any;
+    expect(cookies.some((cookie: string) => cookie.startsWith('refreshToken='))).toBe(true);
   });
 
   it('존재하지 않는 아이디로 로그인 시 실패', async () => {

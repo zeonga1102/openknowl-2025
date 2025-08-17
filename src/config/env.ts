@@ -13,6 +13,12 @@ export const ENV = {
     PORT: Number(process.env.dbPort),
   },
   JWT: {
-    SECRET_KEY: process.env.jwtSecretKey as string
+    SECRET_KEY: process.env.jwtSecretKey as string,
+    EXPIRES_IN: process.env.jwtExpiresIn,
+    REFRESH_SECRET_KEY: process.env.jwtRefreshSecretKey as string,
+    REFRESH_EXPIRES_IN: process.env.jwtRefreshtExpiresIn
+  },
+  COOKIE: {
+    MAX_AGE: Number(process.env.cookieMaxAge)  * 24 * 60 * 60 * 1000
   }
 };

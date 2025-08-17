@@ -3,7 +3,7 @@ import request from "supertest";
 import { DI, start } from '../../index';
 import app from '../../app';
 import { DefaultLimits, ErrorMessages } from "../../constants";
-import { getBearerToken } from "../utils";
+import { getBearerToken, getExpiredBearerToken } from "../utils";
 
 const API = '/api/users/applications';
 
@@ -124,4 +124,18 @@ describe('내 신청 내역 조회 API GET /api/users/applications 통합 테스
     expect(result.status).toBe(401);
     expect(result.body.message).toBe(ErrorMessages.UNAUTHORIZED);
   })
+
+  it('JWT이 만료된 경우 경우 실패', async () => {
+    const input = {
+      limit: 5,
+      last: 10
+    };
+
+    const expiredToken = await getExpiredBearerToken(DI.em);
+
+    const result = await request(app).get(API).query(input).set('Authorization', expiredToken);
+
+    expect(result.status).toBe(401);
+    expect(result.body.message).toBe(ErrorMessages.ACCESS_TOKEN_EXPIRED);
+  });
 });
