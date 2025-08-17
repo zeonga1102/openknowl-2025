@@ -115,6 +115,12 @@ export async function applyToMClass(em: EntityManager, id: number, requestUser: 
 async function assertApplication(appRepo: EntityRepository<Application>, mclass: MClass, userId: number) {
   const now = new Date();
 
+  // 이미 신청한 M클래스
+  const application = await appRepo.findOne({ mclass: mclass, user: userId });
+  if (application) {
+    throw new ConflictError(ErrorMessages.ALREADY_APPLY);
+  }
+  
   // 마감 시간 초과
   if (mclass.deadline <= now) {
     throw new ConflictError(ErrorMessages.DEADLINE_OVER);
@@ -124,12 +130,6 @@ async function assertApplication(appRepo: EntityRepository<Application>, mclass:
   const currentCount = await appRepo.count({ mclass: mclass });
   if (currentCount >= mclass.maxPeople) {
     throw new ConflictError(ErrorMessages.MAX_PEOPLE_EXCESS);
-  }
-
-  // 이미 신청한 M클래스
-  const application = await appRepo.findOne({ mclass: mclass, user: userId });
-  if (application) {
-    throw new ConflictError(ErrorMessages.ALREADY_APPLY);
   }
 }
 
