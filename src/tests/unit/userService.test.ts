@@ -115,7 +115,10 @@ describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', ()
 
   beforeEach(() => {
     userRepo = { findOne: jest.fn() }
-    em = { getRepository: jest.fn(() => userRepo) }
+    em = {
+      getRepository: jest.fn(() => userRepo),
+      flush: jest.fn()
+    }
   });
 
   it('JWT 토큰 발급 성공', async () => {
@@ -136,7 +139,7 @@ describe('loginUser unit test - 로그인 관련 서비스 유닛 테스트', ()
 
     const result = await loginUser(em, input);
 
-    expect(result).toBe(mockToken);
+    expect(result).toEqual({ accessToken: mockToken, refreshToken: mockToken });
   });
 
   it('존재하지 않는 username 사용 시 에러', async () => {
