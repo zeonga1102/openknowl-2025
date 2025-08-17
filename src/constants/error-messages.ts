@@ -36,7 +36,7 @@ export const ErrorMessages = {
   CAN_NOT_APPLY_TO_OWN_MCLASS: '본인이 만든 M클래스는 신청할 수 없습니다.',
 
   LOGIN_FAILED: '로그인 실패',
-
+  ACCESS_TOKEN_EXPIRED: '액세스 토큰 만료',
   UNAUTHORIZED: '인증 실패',
   FORBIDDEN: '권한이 없습니다.',
   NOT_FOUND: '존재하지 않습니다.',

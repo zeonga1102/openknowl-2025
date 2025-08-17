@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import { ENV } from '../config';
 import { UnauthorizedError } from '../errors';
+import { ErrorMessages } from '../constants';
 
 export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;
@@ -20,7 +21,11 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
     };
     
     return next();
-  } catch (err: any) {
+  }
+  catch (err: any) {
+    if (err.name === 'TokenExpiredError') {
+      return next(new UnauthorizedError(ErrorMessages.ACCESS_TOKEN_EXPIRED));
+    }
     return next(new UnauthorizedError());
   }
 };

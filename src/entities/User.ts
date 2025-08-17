@@ -21,4 +21,7 @@ export class User extends BaseEntity{
 
   @Property()
   isAdmin: boolean = false;
+
+  @Property({ nullable: true, length: 255 })
+  refreshToken?: string;
 }

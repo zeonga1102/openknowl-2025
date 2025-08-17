@@ -36,16 +36,31 @@ export async function loginUser(em: EntityManager, data: LoginDto) {
   const isEqual = await bcrypt.compare(data.password, user.password);
   if (!isEqual) throw new UnauthorizedError(ErrorMessages.LOGIN_FAILED);
 
+  // access token 발급
   const accessToken = jwt.sign(
     {
       id: user.id,
       username: user.username,
       isAdmin: user.isAdmin
     },
-    ENV.JWT.SECRET_KEY
+    ENV.JWT.SECRET_KEY,
+    { expiresIn: ENV.JWT.EXPIRES_IN as any}
   );
 
-  return accessToken;
+  // refresh token 발급
+  const refreshToken = jwt.sign(
+    {
+      id: user.id,
+    },
+    ENV.JWT.REFRESH_SECRET_KEY,
+    { expiresIn: ENV.JWT.REFRESH_EXPIRES_IN as any }
+  );
+
+  // refresh token db에 저장
+  user.refreshToken = refreshToken;
+  await em.flush()
+
+  return { accessToken, refreshToken };
 }
 
 async function checkUserCreateData(repo: EntityRepository<User>, username: string, email: string, phone?: string) {
