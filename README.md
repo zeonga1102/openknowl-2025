@@ -31,8 +31,6 @@
     `.env.example` 파일 참고하여 같은 위치에 `.env.development` 파일과 `.env.test` 파일 생성
     
     ```bash
-    # .env.example
-    
     # DB 설정
     dbName=your_db_name
     dbUser=your_db_user
@@ -42,6 +40,12 @@
     
     # JWT 설정
     jwtSecretKey=your_jwt_secret_key
+    jwtExpiresIn=your_jwt_expires_in
+    jwtRefreshSecretKey=your_refresh_jwt_key
+    jwtRefreshtExpiresIn=your_jwt_refresh_expires_in
+    
+    # 쿠키 설정
+    cookieMaxAge=your_cookie_max_age
     ```
     
 3. 마이그레이션
@@ -76,8 +80,8 @@
 
 | **기능** | HTTP Method | URL | Authorization | Request | Response |
 | --- | --- | --- | --- | --- | --- |
-| 회원가입 | POST | /api/users/signup | ❌ | **Body** username, name, password, email, phone | **Body - 유저 정보**<br>id, username, name, email, phone, createdAt |
-| 로그인 | POST | /api/users/login | ❌ | **Body** username, password | **Body - access token**<br>accessToken |
+| 회원가입 | POST | /api/users/signup | ❌ | **Body**<br>username, name, password, email, phone | **Body - 유저 정보**<br>id, username, name, email, phone, createdAt |
+| 로그인 | POST | /api/users/login | ❌ | **Body**<br>username, password | **Body - access token**<br>accessToken |
 | 내 신청 내역 조회 | GET | /api/users/applications | ✅ | **Query string**<br>limit, last | **Body - 신청 정보 목록 (list)** <br>id, mclassId, title, startAt, endAt, fee, createdAt |
 | M클래스 생성 | POST | /api/mclasses | ✅ | **Body**<br>title, description, maxPeople, deadline, startAt, endAt, fee | **Body - M클래스 정보**<br>id, title, description, maxPeople, deadline, startAt, endAt, fee, createdAt |
 | M클래스 목록 조회 | GET | /api/mclasses | ❌ | **Query string**<br>limit, last | **Body - M클래스 정보 목록 (list)** <br>id, title, maxPeople, deadline, startAt, endAt |
@@ -145,7 +149,8 @@
 **POST /api/users/login**
 
 ```
-올바른 username과 password로 요청했을 시 JWT access token 발급
+* 올바른 username과 password로 요청했을 시 JWT access token과 refresh token 발급
+* refresh token은 cookie로 전송
 ```
 
 - Request Body
@@ -288,7 +293,7 @@
     
     ```json
     {
-      "id": 1,
+    	"id": 1,
       "title": "test",
       "description": "test mclass description",
       "maxPeople": 10,
@@ -306,12 +311,13 @@
         - 유효하지 않은 날짜입니다.
     - HTTP status code 401
         - 인증 실패
+        - 액세스 토큰 만료
     - HTTP status code 403
         - 권한이 없습니다.
 
 ### M클래스 목록 조회 API
 
-**GET /api/users/applications**
+**GET /api/mclasses**
 
 ```
 * M클래스 내역 최신순 조회
@@ -350,7 +356,7 @@
           "deadline": "2025-08-14T03:00:00.000Z",
           "startAt": "2025-08-15T03:00:00.000Z",
           "endAt": "2025-08-16T03:00:00.000Z",
-          "createdAt": "2025-08-16T03:00:00.000Z"
+    	  "createdAt": "2025-08-16T03:00:00.000Z"
         }
       ]
     }
@@ -438,12 +444,16 @@
     - HTTP status code 400
         - 유효성 검사 실패
         - 신청자가 있는 클래스입니다.
+    - HTTP status 401
+        - 인증 실패
+        - 액세스 토큰 만료
+    - HTTP status code 403
     - HTTP status code 404
         - 존재하지 않습니다.
 
 ### M클래스 신청 API
 
-**POST /api/mclasses/:id**
+**POST /api/mclasses/:id/apply**
 
 ```
 * 본인이 생성한 M클래스인 경우 신청 불가
@@ -476,6 +486,9 @@
         - 마감 시간이 지났습니다.
         - 정원 초과
         - 이미 신청한 클래스입니다.
+    - HTTP status 401
+        - 인증 실패
+        - 액세스 토큰 만료
     - HTTP status code 403
         - 본인이 만든 M클래스는 신청할 수 없습니다.
     - HTTP status code 404
@@ -484,7 +497,9 @@
 ## 📀데이터베이스
 
 ### ERD
-<img width="1563" height="949" alt="image" src="https://github.com/user-attachments/assets/51513964-9161-4bd5-a23e-56029eeff04c" />
+
+<img width="960" height="863" alt="image" src="https://github.com/user-attachments/assets/a1488847-5627-4c86-a849-afd47335e622" />
+
 
 ### DDL
 
@@ -498,6 +513,7 @@ CREATE TABLE "user" (
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(20) UNIQUE,
     is_admin BOOLEAN DEFAULT FALSE NOT NULL,
+    refreshe_token VARCHAR(255),
     created_at TIMESTAMP DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
@@ -593,7 +609,7 @@ subgraph 사용자
   G3 -->|NO| G4[신청 성공]
   G3 -->|YES| G1[신청 실패]
   G4 -->I[내 신청 내역 조회
-  GET /api/users/applications] --> END([종료])
+  GET /api/users/applications]--> END([종료])
   
   G1 --> F
   
@@ -617,8 +633,8 @@ subgraph 관리자
   P --> R[M클래스 삭제 요청
   DELETE /api/mclasses/:id]
   R --> S{신청자가 존재하는가}
-  S -->|NO| T2[삭제 성공]
   S -->|YES| T1[삭제 실패]
+  S -->|NO| T2[삭제 성공]
   T1 --> P
   T2 --> O
 end
@@ -654,10 +670,15 @@ style END fill:#FFCDD2,stroke:#E57373,stroke-width:2px
         - email: 필수 연락 수단, Unique 설정
         - phone: 휴대폰 번호, 선택 입력 가능, Unique 설정
         - is_admin: 관리자 여부
+        - refresh_token: refresh token
     - 로그인 및 유저 식별에 필요한 속성을 Unique로 관리하여 중복을 방지했습니다.
     - email과 phone을 Unique로 설정한 이유
         - 현재는 해당 사항이 없지만 이메일과 휴대폰 번호는 대부분 인증 및 알림 수단으로 사용되기 때문에 중복되면 본인 확인 과정이나 보안적으로 문제가 발생할 수 있습니다.
         - 추후 서비스 확장 시 비밀번호 재설정, 2차 인증, 알림 전송 등 다양한 기능에서 이메일과 휴대폰 번호를 식별자로 활용할 수 있습니다.
+    - refresh_token을 저장하는 이유
+        - Access token은 만료 시간이 짧기 때문에, 장기적인 세션 유지를 위해 refresh token을 저장합니다. 이를 통해 사용자가 매번 로그인하지 않고도 일정 기간 동안 서비스를 이용할 수 있습니다.
+        - refresh token을 DB에 저장함으로써 토큰 무효화가 가능합니다. 예를 들어, 사용자가 로그아웃하거나 비밀번호를 변경했을 때 DB에 저장된 refresh token을 삭제하면, 이후 토큰 재발급 시도를 차단할 수 있습니다.
+    - refresh_token은 추후 Redis 같은 인메모리 DB를 도입하여 토큰 갱신 및 만료 처리를 더 효율적으로 할 수 있습니다.
 - **MClass**
     - 관리자가 개설하는 M클래스 정보를 관리하기 위한 테이블입니다.
     - 주요 필드
@@ -685,7 +706,17 @@ style END fill:#FFCDD2,stroke:#E57373,stroke-width:2px
 
 ### 인증/인가
 
-로그인에 성공한 경우 JWT를 발급하고 인증은 미들웨어에서 처리하도록 했습니다. 인증이 필요한 API 요청의 경우 발급받은 JWT를 헤더에 넣어 요청합니다. 토큰에는 user id, username, isAdmin을 저장합니다. 토큰의 isAdmin이 true인 경우 관리자 권한입니다.
+- 로그인 성공 시 access token과 refresh token을 발급합니다.
+    - Access token
+        - 인증 요청 시 Authorization header를 통해 전달합니다.
+        - 만료 시간은  10분~1시간 정도로 비교적 짧게 설정해야 합니다.
+    - Refresh token
+        - 보안을 위해 HttpOnly 쿠키로 전달합니다.
+        - 만료 시간은 7~30일 정도로 비교적 길게 설정해야 합니다.
+- Access token 만료 시, 클라이언트는 Refresh token을 사용하여 새로운 Access token을 발급받기 위한 API를 호출해야 합니다. (미구현)
+- 토큰에는 user id, username, isAdmin을 저장합니다.
+- 인증이 필요한 API는 미들웨어에서 access token을 검증한 후 접근을 허용합니다.
+- 관리자 전용 API는 isAdmin이 true인 사용자만 접근 가능하며, RBAC 정책으로 권한을 제한합니다.
 
 ### API 설계
 
@@ -781,7 +812,7 @@ style END fill:#FFCDD2,stroke:#E57373,stroke-width:2px
 - **쿼리 스트링 유효성 검증 코드에서 발생한 타입 오류**
     - 상황: 쿼리 스트링의 유효성을 검증하기 위해 `plainToInstance()`로 변환한 후 `validate()` 함수에 넣었을 때, `validate(instance)`의 `instance` 부분에서 타입 오류가 발생했습니다.
         
-        <img width="579" height="366" alt="image" src="https://github.com/user-attachments/assets/194cfb53-089e-4660-bb59-001f22320d9c" />
+        <img width="579" height="366" alt="image" src="https://github.com/user-attachments/assets/c4434b29-fc92-4066-9295-9ca83e8b724e" />
 
         
     - 원인: 함수를 선언할 때 `dtoClass`의 타입을 any로 지정했기 때문에 TypeScript가 `plainToInstance()`의 반환값을 실제 `dtoClass`의 타입으로 추론할 수 없고, `validate()`가 요구하는 object 타입과 호환되는지 확신할 수 없어서 타입 오류가 발생했습니다.
@@ -791,7 +822,7 @@ style END fill:#FFCDD2,stroke:#E57373,stroke-width:2px
         const instance = plainToInstance(dtoClass, req.query) as InstanceType<typeof dtoClass>;
         ```
         
-        <img width="730" height="368" alt="image" src="https://github.com/user-attachments/assets/b12a1186-9d7d-4377-a60c-91168ffc1a09" />
+        <img width="730" height="368" alt="image" src="https://github.com/user-attachments/assets/f16acaf2-8cf0-42d2-84db-09fa07d51fc6" />
 
         
 - **테스트 중 발생한 `error TS1128: Declaration or statement expected.` 오류**
