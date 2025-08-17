@@ -22,7 +22,9 @@ export const ErrorMessages = {
   INVALID_PHONE: '올바른 휴대폰 번호 형식이 아닙니다.',
   INVALID_DATE: '올바른 날짜 형식이 아닙니다.',
 
-  WRONG_DATE: '유효하지 않은 날짜입니다.',
+  GT_NOW: '현재 시간 이후여야 합니다',
+  INVALID_DEADLINE_START_AT: '마감 시간과 시작일시를 확인해주세요.',
+  INVALID_START_AT_END_AT: '시작일시와 마감일시를 확인해주세요.',
 
   EXSITING_DATA: '존재하는 데이터입니다',
   EXISTING_USERNAME: '중복된 아이디입니다.',
