@@ -582,7 +582,7 @@ EXECUTE FUNCTION update_updated_at_column();
 ## 📈기능 흐름도
 
 ```mermaid
-flowchart TD
+flowchart BT
 
 subgraph 사용자
 	U([회원가입 하지 않은 사용자]) --> A
