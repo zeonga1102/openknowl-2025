@@ -293,7 +293,7 @@
     
     ```json
     {
-    	"id": 1,
+      "id": 1,
       "title": "test",
       "description": "test mclass description",
       "maxPeople": 10,
